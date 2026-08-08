@@ -106,5 +106,84 @@
       "verdictTxHash": null,
       "registerTxHash": null
     }
+  },
+  "0xb6f25b8185978185ad02727b2e35b1651514775689db76c71c73e404ff80d1ce": {
+    "configHash": "0xb6f25b8185978185ad02727b2e35b1651514775689db76c71c73e404ff80d1ce",
+    "agentType": "Guardian",
+    "label": "30-Day Inactivity Transfer",
+    "owner": "demo",
+    "registeredAt": 1786191776,
+    "lastCheckin": 1786191776,
+    "signals": [
+      {
+        "signalType": "inactivity_check",
+        "source": "user activity logs",
+        "description": "confirms no check-in for 30 days",
+        "fired": false,
+        "firedAt": null
+      }
+    ],
+    "triggers": [
+      {
+        "type": "inactivity",
+        "description": "watches for user inactivity",
+        "thresholdSeconds": 2592000,
+        "thresholdValue": null,
+        "source": "user activity logs"
+      }
+    ],
+    "consensusRule": "all",
+    "consensusMet": false,
+    "executedAt": null,
+    "config": {
+      "agentType": "Guardian",
+      "version": "1.0.0",
+      "label": "30-Day Inactivity Transfer",
+      "description": "Transfers 5 OKB if no check-in for 30 days.",
+      "triggers": [
+        {
+          "type": "inactivity",
+          "description": "watches for user inactivity",
+          "thresholdSeconds": 2592000,
+          "thresholdValue": null,
+          "source": "user activity logs"
+        }
+      ],
+      "signals": [
+        {
+          "signalType": "inactivity_check",
+          "source": "user activity logs",
+          "description": "confirms no check-in for 30 days"
+        }
+      ],
+      "consensusRule": "all",
+      "consensusDescription": "fires if no check-in for 30 days",
+      "action": {
+        "type": "release_funds",
+        "description": "transfers 5 OKB to specified address",
+        "requiresBeneficiary": true,
+        "requiresPayload": false
+      },
+      "checkinRequired": true,
+      "checkinIntervalDays": 30,
+      "estimatedMaxSpendWei": "1000000000000000000",
+      "permissions": {
+        "ownerCanCancel": true,
+        "ownerCanUpdateBeneficiary": true,
+        "ownerCanExtendTimeout": true
+      },
+      "demoNotes": "Demonstrate inactivity trigger and fund transfer.",
+      "compiledAt": "2026-08-08T12:22:41.679Z",
+      "inputDescription": "send 5 OKB to 0x1234567890123456789012345678901234567890 if I don't check in for 30 days",
+      "configHash": "0xb6f25b8185978185ad02727b2e35b1651514775689db76c71c73e404ff80d1ce"
+    },
+    "onchain": {
+      "committed": true,
+      "agentId": "4",
+      "agentContractAddress": "0x1D2ce1B26af64Bd1F4592F74B26d9517288Ad3aA",
+      "createTxHash": "0xc923f3373a9b9b2d42c2fb49de422e4aa94410299d41f4a4b5c326fce6313379",
+      "verdictTxHash": null,
+      "registerTxHash": null
+    }
   }
 }
