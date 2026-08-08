@@ -16,6 +16,7 @@ let rawConfig = null;
 
 // ─── Health ───────────────────────────────────────────────────────────────────
 async function checkHealth() {
+  if (!chainStatus) return;
   try {
     const [c, m] = await Promise.all([
       fetch(`${COMPILER_URL}/health`).then(r => r.json()),
@@ -328,6 +329,7 @@ window.doCommit = async (hash) => {
 
 // ─── Refresh agent list ───────────────────────────────────────────────────────
 async function refreshAgents() {
+  if (!agentList) return;
   try {
     // Filter by wallet in real mode, show demo agents in demo mode
     const ownerParam = isDemoMode ? "demo" : (connectedAddress || "");
