@@ -131,6 +131,11 @@ async function estimateAndShowGas(config) {
 }
 
 compileBtn.addEventListener("click", async () => {
+  if (!isDemoMode && !connectedAddress) {
+    compilerOutput.textContent = "// connect a wallet or enable Demo Mode first";
+    openWalletModal();
+    return;
+  }
   const description = compilerInput.value.trim();
   if (description.length < 5) {
     compilerOutput.textContent = "// enter a longer description first";
@@ -165,6 +170,11 @@ compileBtn.addEventListener("click", async () => {
 });
 
 registerBtn.addEventListener("click", async () => {
+  if (!isDemoMode && !connectedAddress) {
+    alert("Connect a wallet or enable Demo Mode first.");
+    openWalletModal();
+    return;
+  }
   if (!rawConfig) return;
   registerBtn.disabled = true;
   registerBtn.textContent = "Registering…";
@@ -190,6 +200,11 @@ registerBtn.addEventListener("click", async () => {
 });
 
 commitBtn.addEventListener("click", async () => {
+  if (!isDemoMode && !connectedAddress) {
+    alert("Connect a wallet or enable Demo Mode first.");
+    openWalletModal();
+    return;
+  }
   if (!currentConfig?.configHash) return;
   if (!isValidAddress(currentConfig.recipient)) {
     alert("Enter a valid recipient wallet address before committing.");
@@ -201,17 +216,38 @@ commitBtn.addEventListener("click", async () => {
     `Amount: ${currentConfig.amount ?? "—"} ${currentConfig.token || ""}\n` +
     `Recipient: ${currentConfig.recipient}\n` +
     `Trigger: ${currentConfig.trigger || "—"}\n\n` +
-    `Continue?`;
+    (isDemoMode
+      ? `This will sign with the demo account (no wallet popup).\n\nContinue?`
+      : `Your wallet will now ask you to confirm and sign this transaction yourself.\n\nContinue?`);
   if (!confirm(summary)) return;
 
   commitBtn.disabled = true;
   commitBtn.textContent = "Sending tx…";
+
   try {
-    const res = await fetch(`${MONITOR_URL}/commit-onchain/${currentConfig.configHash}`, {
-      method: "POST",
-    });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || "commit failed");
+    if (isDemoMode) {
+      // Demo path: your backend's funded signer fires it, no wallet popup.
+      const res = await fetch(`${MONITOR_URL}/commit-onchain/${currentConfig.configHash}`, { method: "POST" });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || "commit failed");
+    } else {
+      // Real path: THEIR connected wallet signs and pays gas — not your backend.
+      if (!window.activeProvider) throw new Error("No wallet provider active");
+      const valueHex = currentConfig.amount
+        ? "0x" + Math.floor(Number(currentConfig.amount) * 1e18).toString(16)
+        : "0x0";
+      const txHash = await window.activeProvider.request({
+        method: "eth_sendTransaction",
+        params: [{ from: connectedAddress, to: currentConfig.recipient, value: valueHex }],
+      });
+      // Tell the backend this agent is now committed, recording the user's own tx hash.
+      // NOTE: requires a lightweight MONITOR_URL/record-tx route — see backend TODO below.
+      await fetch(`${MONITOR_URL}/record-tx/${currentConfig.configHash}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ txHash, from: connectedAddress }),
+      }).catch(() => { /* non-fatal if this route doesn't exist yet */ });
+    }
     await refreshAgents();
   } catch (err) {
     alert(`Onchain commit failed: ${err.message}`);

@@ -60,3 +60,23 @@ router.post("/demo-fire", async (req, res) => {
 });
 
 module.exports = router;
+
+// Records a transaction hash the USER's own wallet already signed and broadcast.
+// This does NOT sign anything server-side — it just lets the Signal Monitor
+// mark the agent as committed with the real, user-paid transaction on record.
+router.post("/record-tx/:configHash", async (req, res) => {
+  try {
+    const { configHash } = req.params;
+    const { txHash, from } = req.body || {};
+    if (!txHash || !from) return res.status(400).json({ error: "txHash and from are required" });
+
+    // TODO: wire this into wherever your Signal Monitor's agent store lives —
+    // this stub just echoes back success so the frontend flow doesn't break.
+    // Look at how commit-onchain currently updates agent.onchain and mirror that,
+    // but set { committed: true, createTxHash: txHash, signer: from, selfSigned: true }.
+    console.log(`[record-tx] agent ${configHash} committed by ${from}: ${txHash}`);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to record tx" });
+  }
+});
