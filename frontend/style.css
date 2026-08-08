@@ -49,10 +49,18 @@ a { color: inherit; text-decoration: none; }
 .btn-icon:hover { border-color: var(--accent); color: var(--accent); }
 
 /* Hero */
-.hero { background: var(--surface); text-align: center; padding: 80px 24px 0; }
+.hero {
+  background: var(--surface);
+  background-image:
+    linear-gradient(rgba(0,210,138,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,210,138,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  text-align: center;
+  padding: 80px 24px 0;
+}
 .eyebrow { display: inline-flex; align-items: center; gap: 7px; background: var(--accent-bg); border: 1px solid var(--accent-border); color: var(--accent-text); font-size: 12px; font-weight: 500; padding: 5px 13px; border-radius: 999px; margin-bottom: 26px; }
 .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
-h1 { font-family: var(--font-display); font-size: 60px; font-weight: 700; line-height: 1.07; letter-spacing: -0.03em; margin-bottom: 20px; }
+h1 { font-family: var(--font-display); font-size: 68px; font-weight: 700; line-height: 1.07; letter-spacing: -0.03em; margin-bottom: 20px; }
 .accent { color: var(--accent); }
 .sub { font-size: 17px; color: var(--text-dim); max-width: 540px; margin: 0 auto 32px; line-height: 1.6; }
 .cta-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 52px; }
