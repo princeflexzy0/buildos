@@ -188,3 +188,25 @@ textarea:focus { outline: none; border-color: var(--accent); }
   .section-head h2 { font-size: 32px; }
   .nav-right .wallet-pill { display: none; }
 }
+
+/* Trust strip under eyebrow */
+.trust-strip { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; font-size: 12px; color: var(--text-dim); margin-bottom: 28px; }
+.trust-item strong { color: var(--text); font-weight: 600; }
+.trust-divider { color: var(--border); }
+
+/* Footer — fixed spacing, no more clamped-together columns */
+.footer { max-width: 1100px; margin: 0 auto; padding: 40px 24px; border-top: 1px solid var(--border-light); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 28px; }
+.footer-col { display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--text-dim); min-width: 160px; }
+.footer-brand { font-family: var(--font-display); font-weight: 700; font-size: 16px; color: var(--text); }
+.footer-links { flex-direction: row; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+.footer-links a { color: var(--text-dim); }
+.footer-links a:hover { color: var(--accent-text); }
+.footer-powered { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 8px; }
+.footer-badge { font-family: var(--font-mono); font-size: 11px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-dim); padding: 4px 10px; border-radius: 999px; }
+
+@media (max-width: 700px) {
+  .footer { flex-direction: column; gap: 20px; padding: 32px 16px; }
+  .footer-links { flex-direction: column; gap: 8px; }
+}
+
+.wallet-option img { width: 24px; height: 24px; object-fit: contain; }

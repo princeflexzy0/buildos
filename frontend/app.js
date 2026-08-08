@@ -147,3 +147,13 @@ checkHealth();
 refreshAgents();
 setInterval(refreshAgents, 8000);
 setInterval(checkHealth, 15000);
+
+// Auto-trigger demo mode or wallet modal if arriving from the landing page CTA
+window.addEventListener("DOMContentLoaded", () => {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("demo") === "1" && typeof enterDemoMode === "function") {
+    enterDemoMode();
+  } else if (params.get("connect") === "1" && typeof openWalletModal === "function") {
+    openWalletModal();
+  }
+});
