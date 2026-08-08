@@ -134,7 +134,7 @@ function renderCompiledConfigForReview() {
 }
 
 // ─── Compile ──────────────────────────────────────────────────────────────────
-compileBtn.addEventListener("click", async () => {
+compileBtn?.addEventListener("click", async () => {
   if (!isDemoMode && !connectedAddress) {
     compilerOutput.textContent = "// connect a wallet or enable Demo Mode first";
     openWalletModal();
@@ -182,7 +182,7 @@ compileBtn.addEventListener("click", async () => {
 });
 
 // ─── Register ─────────────────────────────────────────────────────────────────
-registerBtn.addEventListener("click", async () => {
+registerBtn?.addEventListener("click", async () => {
   if (!isDemoMode && !connectedAddress) {
     alert("Connect a wallet or enable Demo Mode first.");
     openWalletModal();
@@ -214,7 +214,7 @@ registerBtn.addEventListener("click", async () => {
 });
 
 // ─── Commit ───────────────────────────────────────────────────────────────────
-commitBtn.addEventListener("click", async () => {
+commitBtn?.addEventListener("click", async () => {
   if (!isDemoMode && !connectedAddress) {
     alert("Connect a wallet or enable Demo Mode first.");
     openWalletModal();
@@ -361,13 +361,13 @@ window.onWalletConnect = (address) => {
   fetchWalletBalance(address);
 };
 
-refreshBtn.addEventListener("click", refreshAgents);
+refreshBtn?.addEventListener("click", refreshAgents);
 checkHealth();
 refreshAgents();
 setInterval(refreshAgents, 8000);
 setInterval(checkHealth, 15000);
 
-window.addEventListener("DOMContentLoaded", () => {
+window?.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
   const template = params.get("template");
   if (template && typeof loadTemplate === "function") loadTemplate(template);
