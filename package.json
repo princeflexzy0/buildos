@@ -1,0 +1,16 @@
+{
+  "name": "buildos",
+  "version": "1.0.0",
+  "description": "Natural-language-to-live-agent platform on X Layer",
+  "scripts": {
+    "compile": "node scripts/compile.js",
+    "test": "node test/contracts.test.js",
+    "deploy:testnet": "node scripts/deploy.js --network xlayer_testnet",
+    "deploy:mainnet": "node scripts/deploy.js --network xlayer_mainnet"
+  },
+  "devDependencies": {
+    "solc": "^0.8.0",
+    "ethers": "^6.0.0",
+    "dotenv": "^16.0.0"
+  }
+}
