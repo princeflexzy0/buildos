@@ -15,12 +15,7 @@
   <div class="nav-inner">
     <div class="brand">
       <div class="logo-hex">
-        <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="2" y="2" width="6" height="6" rx="1.5" fill="#06120D"/>
-          <rect x="10" y="2" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.5"/>
-          <rect x="2" y="10" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.5"/>
-          <rect x="10" y="10" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.25"/>
-        </svg>
+        <svg viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="#06120D"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.5"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.5"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.25"/></svg>
       </div>
       <div class="brand-text">
         <span class="brand-name">BuildOS</span>
@@ -28,34 +23,33 @@
       </div>
     </div>
     <nav class="nav-links">
+      <a href="#templates">Templates</a>
       <a href="#console">Console</a>
-      <a href="#pipeline">Pipeline</a>
+      <a href="#pipeline">How it Works</a>
       <a href="https://github.com/princeflexzy0/buildos" target="_blank">GitHub</a>
     </nav>
-    <a href="#console" class="btn btn-dark btn-pill">Launch Console</a>
+    <div class="nav-right">
+      <span id="walletPill" class="wallet-pill">Not connected</span>
+      <button id="walletBtn" class="btn btn-dark btn-pill" onclick="connectWallet()">Connect Wallet</button>
+    </div>
   </div>
 </header>
 
+<!-- HERO -->
 <section class="hero">
-  <span class="eyebrow"><span class="dot"></span> Open to Deploy | Natural Language → Onchain Agents</span>
+  <span class="eyebrow"><span class="dot"></span> Natural Language → Live Onchain Agents on X Layer</span>
   <div class="hero-logo-circle">
     <div class="logo-hex-lg">
-      <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="4" y="4" width="12" height="12" rx="3" fill="#06120D"/>
-        <rect x="20" y="4" width="12" height="12" rx="3" fill="#06120D" opacity="0.5"/>
-        <rect x="4" y="20" width="12" height="12" rx="3" fill="#06120D" opacity="0.5"/>
-        <rect x="20" y="20" width="12" height="12" rx="3" fill="#06120D" opacity="0.25"/>
-      </svg>
+      <svg viewBox="0 0 36 36" fill="none"><rect x="4" y="4" width="12" height="12" rx="3" fill="#06120D"/><rect x="20" y="4" width="12" height="12" rx="3" fill="#06120D" opacity="0.5"/><rect x="4" y="20" width="12" height="12" rx="3" fill="#06120D" opacity="0.5"/><rect x="20" y="20" width="12" height="12" rx="3" fill="#06120D" opacity="0.25"/></svg>
     </div>
   </div>
-  <h1>Describe <em>Smarter</em><br>Ship Onchain.</h1>
-  <p class="sub">AI Infrastructure Developer & Onchain Agent Compiler — turning plain English into production-ready smart contracts on X Layer that scale.</p>
+  <h1>Describe <em>Smarter.</em><br>Ship Onchain.</h1>
+  <p class="sub">BuildOS compiles plain English into production-ready smart contracts on X Layer — no code required. Connect your wallet and deploy a live agent in under 60 seconds.</p>
   <div class="cta-row">
-    <a href="#console" class="btn btn-dark btn-lg">Open the Console</a>
-    <a href="#pipeline" class="btn btn-outline btn-lg">How it Works</a>
-    <a href="https://github.com/princeflexzy0/buildos" target="_blank" class="btn btn-green-soft btn-lg">★ GitHub</a>
+    <button class="btn btn-dark btn-lg" onclick="connectWallet()">Connect OKX Wallet</button>
+    <a href="#templates" class="btn btn-outline btn-lg">Browse Templates</a>
+    <a href="#console" class="btn btn-green-soft btn-lg">Open Console</a>
   </div>
-
   <div class="hero-mockup">
     <div class="mockup-bar">
       <span class="mb-dot" style="background:#FF5F57"></span>
@@ -68,74 +62,121 @@
         <div class="panel-tag">Compiler</div>
         <div class="fake-input">release my savings to my daughter if I don't check in for 6 months</div>
         <div class="fake-btn">Compile</div>
-        <div class="fake-code">
-          <span class="ck">"agentType"</span>: <span class="cs">"Chronicle"</span>,<br>
-          <span class="ck">"label"</span>: <span class="cs">"Savings Release"</span>,<br>
-          <span class="ck">"configHash"</span>: <span class="cs">"0xb9a5…c04"</span>,<br>
-          <span class="ck">"action"</span>: <span class="cs">"release_funds"</span>
-        </div>
+        <div class="fake-code"><span class="ck">"agentType"</span>: <span class="cs">"Chronicle"</span>,<br><span class="ck">"label"</span>: <span class="cs">"Savings Release"</span>,<br><span class="ck">"configHash"</span>: <span class="cs">"0xb9a5…c04"</span>,<br><span class="ck">"action"</span>: <span class="cs">"release_funds"</span></div>
       </div>
       <div class="mp-col mp-col-right">
         <div class="panel-tag">Signal Monitor</div>
         <div class="fake-card">
-          <div class="fc-head">
-            <span class="fc-name">Chronicle</span>
-            <span class="badge-on">onchain</span>
-          </div>
+          <div class="fc-head"><span class="fc-name">Chronicle</span><span class="badge-on">onchain</span></div>
           <div class="fc-hash">0xb9a588609ada9eafc5c3c931d7bbd0…c04</div>
-          <div class="fc-links">
-            <a href="#">contract ↗</a>
-            <a href="#">create tx ↗</a>
-          </div>
+          <div class="fc-links"><a href="#">contract ↗</a><a href="#">create tx ↗</a></div>
         </div>
-        <div class="live-strip">
-          <span class="pulse"></span>
-          <span class="status-text">All Systems Operational</span>
-        </div>
-        <div class="deploy-strip">Live deployments — X Layer Testnet · OKX Wallet · Signal Monitor</div>
+        <div class="live-strip"><span class="pulse"></span><span class="status-text">All Systems Operational</span></div>
+        <div class="deploy-strip">Live — X Layer Testnet · OKX Wallet · Signal Monitor</div>
       </div>
     </div>
   </div>
 </section>
 
-<section class="pipeline" id="pipeline">
-  <div class="pipeline-step">
-    <span class="step-num">01</span>
-    <h3>Describe</h3>
-    <p>Write what you want the agent to do, in plain language.</p>
-  </div>
-  <div class="pipeline-arrow">→</div>
-  <div class="pipeline-step">
-    <span class="step-num">02</span>
-    <h3>Compile</h3>
-    <p>An LLM converts it into a structured, hashed agent config.</p>
-  </div>
-  <div class="pipeline-arrow">→</div>
-  <div class="pipeline-step">
-    <span class="step-num">03</span>
-    <h3>Monitor</h3>
-    <p>Signal Monitor watches real-world triggers and evaluates consensus.</p>
-  </div>
-  <div class="pipeline-arrow">→</div>
-  <div class="pipeline-step">
-    <span class="step-num">04</span>
-    <h3>Execute</h3>
-    <p>Verdicts are logged on X Layer — verifiable, permanent, live.</p>
+<!-- DEMO TIMER -->
+<section class="demo-section" id="demo">
+  <div class="demo-inner">
+    <div class="demo-text">
+      <span class="section-tag">🎯 Live Hackathon Demo</span>
+      <h2>Watch it fire.<br>In real time.</h2>
+      <p>Compile a "dead man's switch" agent with a 30-second timeout. Don't check in. Watch the transaction fire automatically on X Layer — live, verifiable, permanent.</p>
+      <button class="btn btn-dark btn-lg" id="demoBtn" onclick="startDemo()">Start Live Demo</button>
+    </div>
+    <div class="demo-timer-box">
+      <div class="timer-label">Agent fires in</div>
+      <div class="timer-display" id="timerDisplay">30</div>
+      <div class="timer-unit">seconds</div>
+      <div class="timer-status" id="timerStatus">Press Start to begin</div>
+      <div class="checkin-row">
+        <button class="btn btn-green btn-block" id="checkinBtn" onclick="doCheckin()" disabled>✓ Check In (Reset Timer)</button>
+      </div>
+      <div id="demoTxHash" class="demo-tx" style="display:none"></div>
+    </div>
   </div>
 </section>
 
+<!-- TEMPLATES -->
+<section class="templates-section" id="templates">
+  <div class="section-inner">
+    <div class="section-head">
+      <span class="section-tag">Agent Templates</span>
+      <h2>Pick a use case.<br>Deploy in seconds.</h2>
+    </div>
+    <div class="templates-grid">
+      <div class="template-card" onclick="loadTemplate('chronicle')">
+        <div class="template-icon">📜</div>
+        <div class="template-label">Digital Will</div>
+        <div class="template-name">Chronicle</div>
+        <p>Releases funds to a beneficiary if owner goes silent for a set period.</p>
+        <span class="template-tag">inactivity trigger</span>
+      </div>
+      <div class="template-card" onclick="loadTemplate('sentinel')">
+        <div class="template-icon">📦</div>
+        <div class="template-label">Delivery Release</div>
+        <div class="template-name">Sentinel</div>
+        <p>Releases payment to supplier when shipment tracking confirms delivery.</p>
+        <span class="template-tag">oracle trigger</span>
+      </div>
+      <div class="template-card" onclick="loadTemplate('guardian')">
+        <div class="template-icon">✈️</div>
+        <div class="template-label">Parametric Insurance</div>
+        <div class="template-name">Guardian</div>
+        <p>Pays out automatically when a flight delay exceeds a threshold.</p>
+        <span class="template-tag">threshold trigger</span>
+      </div>
+      <div class="template-card" onclick="loadTemplate('warden')">
+        <div class="template-icon">🔐</div>
+        <div class="template-label">Dead Drop</div>
+        <div class="template-name">Warden</div>
+        <p>Reveals a sealed document if creator misses scheduled check-ins.</p>
+        <span class="template-tag">checkin trigger</span>
+      </div>
+      <div class="template-card" onclick="loadTemplate('escrow')">
+        <div class="template-icon">🤝</div>
+        <div class="template-label">Smart Escrow</div>
+        <div class="template-name">Arbiter</div>
+        <p>Holds funds and releases on mutual confirmation from both parties.</p>
+        <span class="template-tag">consensus trigger</span>
+      </div>
+      <div class="template-card" onclick="loadTemplate('subscription')">
+        <div class="template-icon">🔄</div>
+        <div class="template-label">Auto Subscription</div>
+        <div class="template-name">Cycle</div>
+        <p>Recurring payment agent that fires on a schedule, cancels on signal.</p>
+        <span class="template-tag">time trigger</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="pipeline" id="pipeline">
+  <div class="pipeline-step"><span class="step-num">01</span><h3>Describe</h3><p>Write what you want the agent to do, in plain language.</p></div>
+  <div class="pipeline-arrow">→</div>
+  <div class="pipeline-step"><span class="step-num">02</span><h3>Compile</h3><p>LLM converts it into a structured, hashed agent config.</p></div>
+  <div class="pipeline-arrow">→</div>
+  <div class="pipeline-step"><span class="step-num">03</span><h3>Monitor</h3><p>Signal Monitor watches real-world triggers and evaluates consensus.</p></div>
+  <div class="pipeline-arrow">→</div>
+  <div class="pipeline-step"><span class="step-num">04</span><h3>Execute</h3><p>Verdicts logged on X Layer — verifiable, permanent, live.</p></div>
+</section>
+
+<!-- LIVE CONSOLE -->
 <section class="console" id="console">
   <div class="console-header">
-    <h2>Live Console</h2>
-    <div class="status-pill" id="chainStatus">
-      <span class="pulse"></span> connecting…
+    <div>
+      <span class="section-tag">Live Console</span>
+      <h2>Build your agent.</h2>
     </div>
+    <div class="status-pill" id="chainStatus"><span class="pulse"></span> connecting…</div>
   </div>
   <div class="console-grid">
     <div class="panel">
-      <div class="panel-head">
-        <span class="panel-label">Compiler</span>
-      </div>
+      <div class="panel-head"><span class="panel-label">Compiler</span></div>
       <textarea id="compilerInput" placeholder="e.g. release my savings to my daughter if I don't check in for 6 months"></textarea>
       <button id="compileBtn" class="btn btn-green btn-block">Compile</button>
       <pre id="compilerOutput" class="code-block">// compiled config will appear here</pre>
@@ -157,11 +198,13 @@
 </section>
 
 <footer class="footer">
-  <span>BuildOS — built for the X Layer AI Season Hackathon</span>
-  <a href="https://github.com/princeflexzy0/buildos" target="_blank">View source</a>
+  <span>BuildOS — built for the X Layer AI Season Hackathon · <a href="https://github.com/princeflexzy0/buildos" target="_blank">GitHub</a></span>
+  <span>Powered by X Layer · OKX Wallet · OpenAI</span>
 </footer>
 
 <script src="config.js"></script>
+<script src="wallet.js"></script>
 <script src="app.js"></script>
+<script src="demo.js"></script>
 </body>
 </html>
