@@ -346,6 +346,7 @@ function renderAgent(agent) {
       </div>
       <div class="agent-hash">${agent.configHash}</div>
       ${committed ? `<div class="agent-balance" id="balance-${agent.configHash}">balance: loading…</div>` : ""}
+      <div class="agent-last-checkin" id="checkin-${agent.configHash}">last check-in: ${agent.lastCheckin ? new Date(agent.lastCheckin * 1000).toLocaleTimeString() : "never"}</div>
       <div class="agent-actions">
         <button class="btn-small" onclick="doCheckin('${agent.configHash}')">Check In</button>
         ${!committed ? `<button class="btn-small btn-primary" onclick="doCommit('${agent.configHash}')">Commit Onchain</button>` : ""}
@@ -361,6 +362,12 @@ window.doCheckin = async (hash) => {
     const res = await fetch(`${MONITOR_URL}/checkin/${hash}`, { method: "POST" });
     const data = await res.json();
     if (!data.success) throw new Error(data.error || "checkin failed");
+    const el = document.getElementById(`checkin-${hash}`);
+    if (el) {
+      el.textContent = "✓ checked in just now";
+      el.classList.add("checkin-flash");
+      setTimeout(() => el.classList.remove("checkin-flash"), 1200);
+    }
     await refreshAgents();
   } catch (err) {
     alert(`Check-in failed: ${err.message}`);

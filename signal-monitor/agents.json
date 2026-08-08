@@ -336,10 +336,89 @@
       "configHash": "0x10aa52a57e5053e6c169a5e7147dd86ea2d05b4fc506a5e5858f77a4140b88a3"
     },
     "onchain": {
-      "committed": false,
-      "agentId": null,
-      "agentContractAddress": null,
-      "createTxHash": null,
+      "committed": true,
+      "agentId": "6",
+      "agentContractAddress": "0xBfb0a48b68072D3f445F7567f1687F56307B336E",
+      "createTxHash": "0x4a1a1f3ee016e179f825097fa6ef38d56260df3ad9004e9f4ea31a761ce091a0",
+      "verdictTxHash": null,
+      "registerTxHash": null
+    }
+  },
+  "0x0f4f8c615859abb04bec2b4e106eabf9012b961a5e811c4a362e853ed1c3e43f": {
+    "configHash": "0x0f4f8c615859abb04bec2b4e106eabf9012b961a5e811c4a362e853ed1c3e43f",
+    "agentType": "Chronicle",
+    "label": "Savings Release to Daughter",
+    "owner": "demo",
+    "registeredAt": 1786196652,
+    "lastCheckin": 1786196652,
+    "signals": [
+      {
+        "signalType": "inactivity_check",
+        "source": "check-in system",
+        "description": "confirms no check-in for 6 months",
+        "fired": false,
+        "firedAt": null
+      }
+    ],
+    "triggers": [
+      {
+        "type": "inactivity",
+        "description": "watches for inactivity",
+        "thresholdSeconds": 15552000,
+        "thresholdValue": null,
+        "source": "check-in system"
+      }
+    ],
+    "consensusRule": "all",
+    "consensusMet": false,
+    "executedAt": null,
+    "config": {
+      "agentType": "Chronicle",
+      "version": "1.0.0",
+      "label": "Savings Release to Daughter",
+      "description": "Releases savings to daughter if no check-in for 6 months.",
+      "triggers": [
+        {
+          "type": "inactivity",
+          "description": "watches for inactivity",
+          "thresholdSeconds": 15552000,
+          "thresholdValue": null,
+          "source": "check-in system"
+        }
+      ],
+      "signals": [
+        {
+          "signalType": "inactivity_check",
+          "source": "check-in system",
+          "description": "confirms no check-in for 6 months"
+        }
+      ],
+      "consensusRule": "all",
+      "consensusDescription": "Agent fires when no check-in for 6 months",
+      "action": {
+        "type": "release_funds",
+        "description": "Releases savings to daughter",
+        "requiresBeneficiary": true,
+        "requiresPayload": false
+      },
+      "checkinRequired": true,
+      "checkinIntervalDays": 30,
+      "estimatedMaxSpendWei": "1000000000000000000",
+      "permissions": {
+        "ownerCanCancel": true,
+        "ownerCanUpdateBeneficiary": true,
+        "ownerCanExtendTimeout": true
+      },
+      "demoNotes": "Show the process of checking in and what happens if no check-in occurs for 6 months.",
+      "compiledAt": "2026-08-08T13:44:05.028Z",
+      "inputDescription": "release my savings to my daughter if I don't check in for 6 months",
+      "configHash": "0x0f4f8c615859abb04bec2b4e106eabf9012b961a5e811c4a362e853ed1c3e43f"
+    },
+    "onchain": {
+      "committed": true,
+      "agentId": "5",
+      "agentContractAddress": "0xc395D5989b7fCc1460626bF834f6316D74fD35DF",
+      "createTxHash": "0x82ca080e791b672f0b069c05fa0d91a33cc29adac4c68e365e37f6929f341e85",
       "verdictTxHash": null,
       "registerTxHash": null
     }
