@@ -34,7 +34,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "GET" && url === "/health") {
     res.writeHead(200, {"Content-Type":"application/json"});
-    return res.end(JSON.stringify({status:"ok",service:"BuildOS Compiler",hasApiKey:!!process.env.ANTHROPIC_API_KEY}));
+    return res.end(JSON.stringify({status:"ok",service:"BuildOS Compiler",hasApiKey:!!process.env.OPENAI_API_KEY}));
   }
   if (req.method === "GET" && url === "/demos") {
     res.writeHead(200, {"Content-Type":"application/json"});
@@ -61,5 +61,5 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`BuildOS Compiler Server running on http://localhost:${PORT}`);
-  console.log(`API key: ${process.env.ANTHROPIC_API_KEY ? "set" : "MISSING - set ANTHROPIC_API_KEY in .env"}`);
+  console.log(`API key: ${process.env.OPENAI_API_KEY ? "set" : "MISSING - set OPENAI_API_KEY in .env"}`);
 });

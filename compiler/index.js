@@ -1,3 +1,4 @@
+// BuildOS Compiler - Natural language -> structured agent config (OpenAI)
 const https = require("https");
 const crypto = require("crypto");
 require("dotenv").config();
@@ -30,34 +31,41 @@ RULES:
 - estimatedMaxSpendWei: use "1000000000000000000" if amount not specified
 - ONLY output JSON. No preamble, no markdown fences.`;
 
-async function callClaude(prompt) {
+async function callOpenAI(prompt) {
   const body = JSON.stringify({
-    model: "claude-sonnet-4-6",
-    max_tokens: 1024,
-    messages: [{ role: "user", content: prompt }],
-    system: COMPILER_SYSTEM_PROMPT,
+    model: "gpt-4o",
+    messages: [
+      { role: "system", content: COMPILER_SYSTEM_PROMPT },
+      { role: "user", content: prompt },
+    ],
+    temperature: 0.2,
+    response_format: { type: "json_object" },
   });
   return new Promise((resolve, reject) => {
-    const req = https.request({
-      hostname: "api.anthropic.com",
-      path: "/v1/messages",
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
+    const req = https.request(
+      {
+        hostname: "api.openai.com",
+        path: "/v1/chat/completions",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
       },
-    }, (res) => {
-      let data = "";
-      res.on("data", (chunk) => (data += chunk));
-      res.on("end", () => {
-        try {
-          const parsed = JSON.parse(data);
-          if (parsed.error) return reject(new Error(parsed.error.message));
-          resolve(parsed.content[0].text);
-        } catch (e) { reject(e); }
-      });
-    });
+      (res) => {
+        let data = "";
+        res.on("data", (chunk) => (data += chunk));
+        res.on("end", () => {
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.error) return reject(new Error(parsed.error.message));
+            resolve(parsed.choices[0].message.content);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+    );
     req.on("error", reject);
     req.write(body);
     req.end();
@@ -65,13 +73,16 @@ async function callClaude(prompt) {
 }
 
 async function compile(description) {
-  if (!process.env.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY not set in .env");
+  if (!process.env.OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not set in .env");
   console.log(`\n Compiling: "${description}"\n`);
-  const raw = await callClaude(description);
+  const raw = await callOpenAI(description);
   const cleaned = raw.replace(/^```json?\n?/i, "").replace(/\n?```$/i, "").trim();
   let config;
-  try { config = JSON.parse(cleaned); }
-  catch (e) { throw new Error(`Claude returned invalid JSON:\n${cleaned}`); }
+  try {
+    config = JSON.parse(cleaned);
+  } catch (e) {
+    throw new Error(`OpenAI returned invalid JSON:\n${cleaned}`);
+  }
   config.compiledAt = new Date().toISOString();
   config.inputDescription = description;
   config.configHash = "0x" + crypto.createHash("sha256").update(JSON.stringify(config)).digest("hex");
