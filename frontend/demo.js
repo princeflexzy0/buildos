@@ -20,13 +20,10 @@ const TEMPLATE_DESCRIPTIONS = {
 function loadTemplate(type) {
   const desc = TEMPLATE_DESCRIPTIONS[type];
   if (!desc) return;
-  // Guard against loadTemplate firing before initDemoModeOnLoad has restored
-  // isDemoMode from localStorage on page load (race condition on navigation).
-  if (!isDemoMode && !connectedAddress) {
-    const stored = localStorage.getItem(DEMO_MODE_KEY);
-    if (stored === null || stored === "true") {
-      enterDemoMode(false);
-    }
+  // Clicking a template card always means "let me try this" - force demo mode
+  // on if no real wallet is connected, no matter what was previously stored.
+  if (!connectedAddress) {
+    enterDemoMode(true);
   }
   const input = document.getElementById("compilerInput");
   if (input) { input.value = desc; input.focus(); document.getElementById("compileBtn")?.click(); }
