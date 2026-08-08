@@ -14,6 +14,7 @@ const SUPPORTED_TOKENS = ["OKB", "USDT", "USDC"];
 let currentConfig = null;
 let rawConfig = null;
 
+// ─── Health ───────────────────────────────────────────────────────────────────
 async function checkHealth() {
   try {
     const [c, m] = await Promise.all([
@@ -26,26 +27,19 @@ async function checkHealth() {
   }
 }
 
-// Maps the real compiler response shape into what the UI needs
+// ─── Normalize compiler response ──────────────────────────────────────────────
 function normalizeConfig(raw) {
   const trigger = raw.triggers?.[0];
   const action = raw.action || {};
-
-  // Parse amount from action.description e.g. "transfers 5 OKB"
   const amountMatch = (action.description || raw.description || "").match(/([\d.]+)\s*(OKB|USDT|USDC)/i);
   const amount = amountMatch ? amountMatch[1] : null;
   const token = amountMatch ? amountMatch[2].toUpperCase() : null;
-
-  // Parse recipient from inputDescription e.g. "...to 0x1234..."
   const addrMatch = (raw.inputDescription || "").match(/0x[a-fA-F0-9]{40}/);
   const recipient = addrMatch ? addrMatch[0] : null;
-
   return {
     label: raw.label || raw.agentType || "Agent",
     action: action.type || action.description || "—",
-    amount,
-    token,
-    recipient,
+    amount, token, recipient,
     trigger: trigger?.description || trigger?.type || "—",
     triggerSeconds: trigger?.thresholdSeconds,
     requiresBeneficiary: action.requiresBeneficiary || false,
@@ -57,12 +51,15 @@ function isValidAddress(addr) {
   return typeof addr === "string" && /^0x[a-fA-F0-9]{40}$/.test(addr);
 }
 
+// ─── Commit button gate ───────────────────────────────────────────────────────
 function updateCommitGate() {
   const addrValid = isValidAddress(currentConfig?.recipient);
   const registered = !!currentConfig?.configHash;
-  commitBtn.disabled = !(addrValid && registered);
+  const walletOk = isDemoMode || !!connectedAddress;
+  commitBtn.disabled = !(addrValid && registered && walletOk);
 }
 
+// ─── Gas estimate ─────────────────────────────────────────────────────────────
 async function estimateAndShowGas(config) {
   const gasBox = document.getElementById("gasEstimateBox");
   if (!gasBox || !isValidAddress(config.recipient)) return;
@@ -72,32 +69,28 @@ async function estimateAndShowGas(config) {
   try {
     const rpc = "https://testrpc.xlayer.tech";
     const valueHex = config.amount ? "0x" + Math.floor(Number(config.amount) * 1e18).toString(16) : "0x0";
-    const gasRes = await fetch(rpc, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_estimateGas", params: [{ to: config.recipient, value: valueHex }] }),
-    });
+    const [gasRes, priceRes] = await Promise.all([
+      fetch(rpc, { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_estimateGas", params: [{ to: config.recipient, value: valueHex }] }) }),
+      fetch(rpc, { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 2, method: "eth_gasPrice", params: [] }) }),
+    ]);
     const gasJson = await gasRes.json();
-    if (gasJson.error) throw new Error(gasJson.error.message);
-    const priceRes = await fetch(rpc, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jsonrpc: "2.0", id: 2, method: "eth_gasPrice", params: [] }),
-    });
     const priceJson = await priceRes.json();
-    const gasUnits = parseInt(gasJson.result, 16);
-    const gasPriceWei = parseInt(priceJson.result, 16);
-    const feeOKB = (gasUnits * gasPriceWei) / 1e18;
+    if (gasJson.error) throw new Error(gasJson.error.message);
+    const feeOKB = (parseInt(gasJson.result, 16) * parseInt(priceJson.result, 16)) / 1e18;
     gasBox.className = "gas-estimate gas-estimate-ready";
-    gasBox.innerHTML = `Estimated network fee: <strong>${feeOKB.toFixed(6)} OKB</strong> (${gasUnits.toLocaleString()} gas, testnet)`;
-  } catch (err) {
+    gasBox.innerHTML = `Estimated network fee: <strong>${feeOKB.toFixed(6)} OKB</strong> (testnet)`;
+  } catch {
     gasBox.className = "gas-estimate gas-estimate-error";
     gasBox.textContent = "Couldn't estimate gas — network may be unreachable.";
   }
 }
 
+// ─── Render compiled config review panel ──────────────────────────────────────
 function renderCompiledConfigForReview() {
   const addrValid = isValidAddress(currentConfig.recipient);
   const days = currentConfig.triggerSeconds ? Math.round(currentConfig.triggerSeconds / 86400) : null;
-
   compilerOutput.innerHTML = `
     <div class="config-review">
       <div class="config-row"><label>Agent</label><span>${currentConfig.label}</span></div>
@@ -109,19 +102,18 @@ function renderCompiledConfigForReview() {
                value="${addrValid ? currentConfig.recipient : ""}">
       </div>
       <div class="config-row"><label>Trigger</label><span>${currentConfig.trigger}${days ? ` (${days} days)` : ""}</span></div>
-      ${!addrValid ? `<div class="config-warning">⚠️ No wallet address found in your description. Paste a valid 0x… address above to unlock Register and Commit.</div>` : ""}
+      ${!addrValid ? `<div class="config-warning">⚠️ No wallet address found. Paste a valid 0x… address above to unlock Register and Commit.</div>` : ""}
     </div>`;
-
   document.getElementById("recipientInput")?.addEventListener("input", e => {
     currentConfig.recipient = e.target.value.trim();
     updateCommitGate();
     if (isValidAddress(currentConfig.recipient)) estimateAndShowGas(currentConfig);
   });
-
   if (addrValid) estimateAndShowGas(currentConfig);
   updateCommitGate();
 }
 
+// ─── Compile ──────────────────────────────────────────────────────────────────
 compileBtn.addEventListener("click", async () => {
   if (!isDemoMode && !connectedAddress) {
     compilerOutput.textContent = "// connect a wallet or enable Demo Mode first";
@@ -140,7 +132,6 @@ compileBtn.addEventListener("click", async () => {
   commitBtn.disabled = true;
   const gasBox = document.getElementById("gasEstimateBox");
   if (gasBox) gasBox.style.display = "none";
-
   try {
     const res = await fetch(`${COMPILER_URL}/compile`, {
       method: "POST",
@@ -161,6 +152,7 @@ compileBtn.addEventListener("click", async () => {
   }
 });
 
+// ─── Register ─────────────────────────────────────────────────────────────────
 registerBtn.addEventListener("click", async () => {
   if (!isDemoMode && !connectedAddress) {
     alert("Connect a wallet or enable Demo Mode first.");
@@ -174,7 +166,10 @@ registerBtn.addEventListener("click", async () => {
     const res = await fetch(`${MONITOR_URL}/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ config: rawConfig }),
+      body: JSON.stringify({
+        config: rawConfig,
+        ownerAddress: isDemoMode ? "demo" : connectedAddress,
+      }),
     });
     const data = await res.json();
     if (!data.success) throw new Error(data.error || "register failed");
@@ -189,6 +184,7 @@ registerBtn.addEventListener("click", async () => {
   }
 });
 
+// ─── Commit ───────────────────────────────────────────────────────────────────
 commitBtn.addEventListener("click", async () => {
   if (!isDemoMode && !connectedAddress) {
     alert("Connect a wallet or enable Demo Mode first.");
@@ -200,7 +196,6 @@ commitBtn.addEventListener("click", async () => {
     alert("Enter a valid recipient wallet address before committing.");
     return;
   }
-
   const summary = `Commit this agent onchain?\n\n` +
     `Agent: ${currentConfig.label}\n` +
     `Action: ${currentConfig.action}\n` +
@@ -211,7 +206,6 @@ commitBtn.addEventListener("click", async () => {
       ? `Demo mode — signed by demo account (no wallet popup).`
       : `Your wallet will ask you to sign and pay gas.`);
   if (!confirm(summary)) return;
-
   commitBtn.disabled = true;
   commitBtn.textContent = "Sending tx…";
   try {
@@ -243,39 +237,97 @@ commitBtn.addEventListener("click", async () => {
   }
 });
 
+// ─── Agent cards ──────────────────────────────────────────────────────────────
 function renderAgent(agent) {
-  const badgeClass = agent.onchain?.committed ? "active" : "pending";
-  const badgeText = agent.onchain?.committed ? "onchain" : "off-chain";
+  const committed = agent.onchain?.committed;
+  const days = agent.triggers?.[0]?.thresholdSeconds
+    ? Math.round(agent.triggers[0].thresholdSeconds / 86400) : null;
   const links = [];
   if (agent.onchain?.agentContractAddress)
     links.push(`<a href="${EXPLORER_BASE}/${agent.onchain.agentContractAddress}" target="_blank">contract ↗</a>`);
   if (agent.onchain?.createTxHash)
     links.push(`<a href="${EXPLORER_BASE}/${agent.onchain.createTxHash}" target="_blank">create tx ↗</a>`);
+
   return `
-    <div class="agent-card">
+    <div class="agent-card" data-hash="${agent.configHash}">
       <div class="agent-card-head">
-        <span class="agent-type">${agent.agentType || agent.config?.label || "Agent"}</span>
-        <span class="badge ${badgeClass}">${badgeText}</span>
+        <span class="agent-type">${agent.label || agent.agentType || "Agent"}</span>
+        <span class="badge ${committed ? "active" : "pending"}">${committed ? "onchain" : "off-chain"}</span>
+      </div>
+      <div class="agent-meta">
+        ${days ? `<span>⏱ ${days}-day trigger</span>` : ""}
+        <span class="badge ${agent.consensusMet ? "active" : ""}">${agent.consensusMet ? "✓ consensus met" : "watching"}</span>
       </div>
       <div class="agent-hash">${agent.configHash}</div>
-      <div class="badge ${agent.consensusMet ? "active" : ""}" style="display:inline-block">${agent.consensusMet ? "consensus met" : "watching"}</div>
+      <div class="agent-actions">
+        <button class="btn-small" onclick="doCheckin('${agent.configHash}')">Check In</button>
+        ${!committed ? `<button class="btn-small btn-primary" onclick="doCommit('${agent.configHash}')">Commit Onchain</button>` : ""}
+      </div>
       <div class="agent-links">${links.join("")}</div>
     </div>`;
 }
 
+// Check-in for a specific agent
+window.doCheckin = async (hash) => {
+  try {
+    const res = await fetch(`${MONITOR_URL}/checkin/${hash}`, { method: "POST" });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || "checkin failed");
+    await refreshAgents();
+  } catch (err) {
+    alert(`Check-in failed: ${err.message}`);
+  }
+};
+
+// Commit a specific agent from the list
+window.doCommit = async (hash) => {
+  if (!isDemoMode && !connectedAddress) {
+    alert("Connect a wallet or enable Demo Mode first.");
+    openWalletModal();
+    return;
+  }
+  if (!confirm(`Commit agent ${hash.slice(0, 10)}… onchain?`)) return;
+  try {
+    const res = await fetch(`${MONITOR_URL}/commit-onchain/${hash}`, { method: "POST" });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || "commit failed");
+    await refreshAgents();
+  } catch (err) {
+    alert(`Commit failed: ${err.message}`);
+  }
+};
+
+// ─── Refresh agent list ───────────────────────────────────────────────────────
 async function refreshAgents() {
   try {
-    const res = await fetch(`${MONITOR_URL}/status`);
+    // Filter by wallet in real mode, show demo agents in demo mode
+    const ownerParam = isDemoMode ? "demo" : (connectedAddress || "");
+    const url = ownerParam ? `${MONITOR_URL}/status?owner=${ownerParam}` : `${MONITOR_URL}/status`;
+    const res = await fetch(url);
     const data = await res.json();
     if (!data.success || !data.agents?.length) {
-      agentList.innerHTML = `<p class="empty-state">No agents registered yet. Compile one on the left to get started.</p>`;
+      agentList.innerHTML = `<p class="empty-state">No agents yet. Compile one on the left to get started.</p>`;
       return;
     }
     agentList.innerHTML = data.agents.slice().reverse().map(renderAgent).join("");
-  } catch (err) {
+  } catch {
     agentList.innerHTML = `<p class="empty-state">Could not reach Signal Monitor.</p>`;
   }
 }
+
+// ─── Wallet disconnect — lock UI but keep compiled config ─────────────────────
+// Called from wallet.js / demo-mode.js when wallet disconnects
+window.onWalletDisconnect = () => {
+  commitBtn.disabled = true;
+  registerBtn.disabled = true;
+  refreshAgents();
+};
+
+// ─── Wallet connect — restore history ─────────────────────────────────────────
+window.onWalletConnect = (address) => {
+  refreshAgents();
+  if (currentConfig) updateCommitGate();
+};
 
 refreshBtn.addEventListener("click", refreshAgents);
 checkHealth();

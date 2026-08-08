@@ -58,7 +58,8 @@ const server = http.createServer(async (req, res) => {
       return res.end(JSON.stringify({ success: true, agent }));
     }
     res.writeHead(200, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify({ success: true, agents: listAgents() }));
+    const owner = new URL("http://x" + req.url).searchParams.get("owner");
+    return res.end(JSON.stringify({ success: true, agents: listAgents(owner) }));
   }
 
   if (req.method === "POST" && parts[0] === "register") {
@@ -74,7 +75,8 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(400, { "Content-Type": "application/json" });
       return res.end(JSON.stringify({ error: "valid agent config required" }));
     }
-    const state = registerAgent(config);
+    const ownerAddress = (body.ownerAddress || "").toLowerCase() || null;
+    const state = registerAgent(config, ownerAddress);
     res.writeHead(200, { "Content-Type": "application/json" });
     return res.end(JSON.stringify({ success: true, agent: state }));
   }

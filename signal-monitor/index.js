@@ -1,20 +1,50 @@
 // BuildOS Signal Monitor - core signal checking + consensus logic
 const crypto = require("crypto");
+const fs = require("fs");
+const path = require("path");
 const chain = require("./chain");
 
-// In-memory registry: configHash -> { config, state }
+const DB_PATH = path.join(__dirname, "agents.json");
+
+// Load from disk on startup
 const registry = new Map();
+function loadFromDisk() {
+  try {
+    if (fs.existsSync(DB_PATH)) {
+      const raw = JSON.parse(fs.readFileSync(DB_PATH, "utf8"));
+      Object.entries(raw).forEach(([hash, state]) => registry.set(hash, state));
+      console.log(`[monitor] loaded ${registry.size} agents from disk`);
+    }
+  } catch (e) {
+    console.warn("[monitor] could not load agents.json:", e.message);
+  }
+}
+function saveToDisk() {
+  try {
+    const obj = {};
+    registry.forEach((state, hash) => { obj[hash] = state; });
+    fs.writeFileSync(DB_PATH, JSON.stringify(obj, null, 2));
+  } catch (e) {
+    console.warn("[monitor] could not save agents.json:", e.message);
+  }
+}
+loadFromDisk();
 
 function nowSec() {
   return Math.floor(Date.now() / 1000);
 }
 
-function registerAgent(config) {
+function registerAgent(config, ownerAddress) {
   const hash = config.configHash || ("0x" + crypto.createHash("sha256").update(JSON.stringify(config)).digest("hex"));
+  
+  // If already exists, just return existing (idempotent)
+  if (registry.has(hash)) return registry.get(hash);
+
   const state = {
     configHash: hash,
     agentType: config.agentType,
     label: config.label,
+    owner: ownerAddress || null,  // wallet address that created this agent
     registeredAt: nowSec(),
     lastCheckin: nowSec(),
     signals: (config.signals || []).map((s) => ({
@@ -27,7 +57,6 @@ function registerAgent(config) {
     consensusMet: false,
     executedAt: null,
     config,
-    // onchain fields - populated by commitOnchain()
     onchain: {
       committed: false,
       agentId: null,
@@ -38,6 +67,7 @@ function registerAgent(config) {
     },
   };
   registry.set(hash, state);
+  saveToDisk();
   return state;
 }
 
@@ -45,8 +75,11 @@ function getAgent(hash) {
   return registry.get(hash) || null;
 }
 
-function listAgents() {
-  return Array.from(registry.values());
+function listAgents(ownerAddress) {
+  const all = Array.from(registry.values());
+  // If owner filter provided, return only their agents
+  if (ownerAddress) return all.filter(a => a.owner === ownerAddress.toLowerCase());
+  return all;
 }
 
 function checkin(hash) {
@@ -60,6 +93,7 @@ function checkin(hash) {
     }
   });
   state.consensusMet = false;
+  saveToDisk();
   return state;
 }
 
@@ -71,6 +105,7 @@ function simulateSignal(hash, signalType) {
   sig.fired = true;
   sig.firedAt = nowSec();
   evaluateConsensus(state);
+  saveToDisk();
   return state;
 }
 
@@ -122,28 +157,26 @@ function tickAll() {
   registry.forEach((state) => {
     if (!state.executedAt) autoEvaluate(state);
   });
+  saveToDisk();
 }
 
-// Explicitly pushes an agent onchain via AgentFactory.createAgent()
 async function commitOnchain(hash) {
   const state = registry.get(hash);
   if (!state) throw new Error("agent not found");
   if (state.onchain.committed) throw new Error("agent already committed onchain");
-
   const result = await chain.createOnchainAgent(state.config);
   state.onchain.committed = true;
   state.onchain.agentId = result.agentId;
   state.onchain.agentContractAddress = result.agentContractAddress;
   state.onchain.createTxHash = result.txHash;
+  saveToDisk();
   return state;
 }
 
-// Pushes the current signal/consensus state onchain as a real signal + verdict
 async function commitVerdictOnchain(hash) {
   const state = registry.get(hash);
   if (!state) throw new Error("agent not found");
-  if (!state.onchain.committed) throw new Error("agent not committed onchain yet - call commitOnchain first");
-
+  if (!state.onchain.committed) throw new Error("agent not committed onchain yet");
   const firedSignal = state.signals.find((s) => s.fired) || state.signals[0];
   const result = await chain.submitVerdict(state.onchain.agentContractAddress, {
     signalType: firedSignal ? firedSignal.signalType : "unknown",
@@ -154,9 +187,9 @@ async function commitVerdictOnchain(hash) {
     signalsInFavor: state.signals.filter((s) => s.fired).length,
     signalsTotal: state.signals.length,
   });
-
   state.onchain.registerTxHash = result.registerTxHash;
   state.onchain.verdictTxHash = result.verdictTxHash;
+  saveToDisk();
   return state;
 }
 
