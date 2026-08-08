@@ -103,35 +103,100 @@ build("templates.html", "Templates — BuildOS", "templates", templates_body)
 how_body = '''
 <section class="page-hero">
   <span class="section-tag">How it Works</span>
-  <h1>Four steps.<br>Plain English to onchain.</h1>
-  <p class="page-sub">BuildOS turns a sentence into a monitored, self-executing agent on X Layer.</p>
+  <h1>Plain English.<br>Onchain in four steps.</h1>
+  <p class="page-sub">BuildOS turns a sentence into a monitored, self-executing agent on X Layer. No code. No ABI. Just describe what you want.</p>
 </section>
 <section class="pipeline-standalone">
   <div class="pipeline-step-lg">
     <span class="step-num">01</span>
-    <h3>Describe</h3>
-    <p>Write what you want the agent to do, in plain language — no code, no ABI, no Solidity.</p>
+    <h3>Describe your intent</h3>
+    <p>Write what you want in plain English. Include the <strong>amount</strong>, the <strong>recipient wallet address</strong>, and the <strong>trigger condition</strong>.</p>
+    <div class="how-example">
+      <span class="how-example-label">Example</span>
+      <span class="how-example-text">"Send 5 OKB to 0x1234...5678 if I don't check in for 30 days"</span>
+    </div>
+    <ul class="how-tips">
+      <li>💰 <strong>Amount:</strong> how much to send — e.g. 5 OKB, 100 USDT</li>
+      <li>📬 <strong>Recipient:</strong> destination wallet — always a full 0x... address</li>
+      <li>⏱ <strong>Trigger:</strong> when it fires — e.g. after 30 days of inactivity</li>
+    </ul>
   </div>
   <div class="pipeline-step-lg">
     <span class="step-num">02</span>
-    <h3>Compile</h3>
-    <p>An LLM converts your sentence into a structured, hashed agent config: trigger condition, action, and target.</p>
+    <h3>Compile + review</h3>
+    <p>The compiler parses your sentence into a structured agent config. Review every field — amount, recipient, trigger — and edit before registering.</p>
+    <div class="how-example">
+      <span class="how-example-label">What you see</span>
+      <span class="how-example-text">Agent · Action · Amount · Recipient input · Trigger · Gas estimate</span>
+    </div>
+    <ul class="how-tips">
+      <li>✏️ No address in your description? Paste one in the Recipient field</li>
+      <li>⛽ Live gas estimate shows the testnet fee before you commit</li>
+      <li>🔒 Nothing is sent or signed until you click Commit</li>
+    </ul>
   </div>
   <div class="pipeline-step-lg">
     <span class="step-num">03</span>
-    <h3>Monitor</h3>
-    <p>Signal Monitor watches real-world triggers — check-ins, oracle feeds, timers — and evaluates when conditions are met.</p>
+    <h3>Register + monitor</h3>
+    <p>The Signal Monitor watches for your trigger 24/7 — check-ins, timers, and oracle signals evaluated against your agent rules.</p>
+    <div class="how-example">
+      <span class="how-example-label">Demo vs real wallet</span>
+      <span class="how-example-text">Demo ON: demo account signs, no popup. Demo OFF: your wallet signs, you pay gas.</span>
+    </div>
+    <ul class="how-tips">
+      <li>🟢 <strong>Demo Mode ON:</strong> try everything freely, no wallet needed</li>
+      <li>🦊 <strong>Demo Mode OFF:</strong> connect MetaMask or OKX Wallet</li>
+      <li>📋 Agents saved and linked to your wallet — reconnecting restores history</li>
+    </ul>
   </div>
   <div class="pipeline-step-lg">
     <span class="step-num">04</span>
-    <h3>Execute</h3>
-    <p>Once triggered, the verdict is logged and executed on X Layer — verifiable, permanent, and visible on-chain.</p>
+    <h3>Commit + execute</h3>
+    <p>Once your trigger fires, the agent executes on X Layer — verifiable and permanent on-chain.</p>
+    <div class="how-example">
+      <span class="how-example-label">What happens</span>
+      <span class="how-example-text">Verdict logged onchain → funds released to recipient → explorer link available</span>
+    </div>
+    <ul class="how-tips">
+      <li>🔗 Every committed agent gets a contract address and tx you can verify</li>
+      <li>✅ Hit Check In at any time to reset your inactivity timer</li>
+      <li>👛 In real mode, transfer comes from your wallet — BuildOS never holds funds</li>
+    </ul>
+  </div>
+</section>
+<section class="page-section">
+  <h2 style="text-align:center;margin-bottom:32px">Frequently asked</h2>
+  <div class="faq-grid">
+    <div class="faq-item">
+      <h4>Do I need to enter an amount?</h4>
+      <p>Yes for real commits. Include it in your description ("5 OKB") or type it in the amount field above Compile. Demo mode works without it.</p>
+    </div>
+    <div class="faq-item">
+      <h4>What address do I use as recipient?</h4>
+      <p>Any valid 0x... address — a family member, another wallet you own, anyone who should receive the funds when the trigger fires.</p>
+    </div>
+    <div class="faq-item">
+      <h4>What if I lose my compiled agent?</h4>
+      <p>Registered agents are saved to disk and linked to your wallet. Reconnecting your wallet restores your full history automatically.</p>
+    </div>
+    <div class="faq-item">
+      <h4>Does BuildOS hold my funds?</h4>
+      <p>In demo mode a demo account is used. In real mode your wallet signs every transaction — BuildOS never custodies your funds.</p>
+    </div>
+    <div class="faq-item">
+      <h4>Can I have multiple agents?</h4>
+      <p>Yes. Compile and register as many as you want. Each appears as a card in the Signal Monitor with its own Check In and Commit buttons.</p>
+    </div>
+    <div class="faq-item">
+      <h4>What tokens are supported?</h4>
+      <p>OKB, USDT, and USDC on X Layer testnet. Mainnet support is on the roadmap.</p>
+    </div>
   </div>
 </section>
 <section class="page-cta-band">
-  <h2>See it fire live.</h2>
-  <a href="demo.html" class="btn btn-dark btn-lg">Watch the Live Demo</a>
-  <a href="console.html" class="btn btn-outline btn-lg">Open the Console</a>
+  <h2>Ready to try it?</h2>
+  <a href="console.html" class="btn btn-dark btn-lg">Open the Console</a>
+  <a href="demo.html" class="btn btn-outline btn-lg">Watch Live Demo</a>
 </section>
 '''
 build("how-it-works.html", "How it Works — BuildOS", "how-it-works", how_body)
