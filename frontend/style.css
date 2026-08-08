@@ -137,6 +137,3 @@ textarea:focus { outline: none; border-color: var(--accent); }
   .hero-mockup { transform: translateY(24px); }
 }
 
-/* Logo image override */
-.logo-hex { display: none; }
-.brand-img { height: 38px; width: auto; }
