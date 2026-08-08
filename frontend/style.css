@@ -440,3 +440,8 @@ textarea:focus { outline: none; border-color: var(--accent); }
   .pipeline-standalone { padding: 24px 16px; gap: 24px; }
   .pipeline-step-lg { padding: 20px; }
 }
+
+/* Prevent orphaned last words */
+p, .page-sub, .sub, .faq-item p, .pipeline-step-lg p, .how-tips li {
+  text-wrap: pretty;
+}
