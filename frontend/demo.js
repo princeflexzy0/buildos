@@ -1,6 +1,14 @@
 let demoInterval = null;
 let demoSeconds = 30;
 let demoRunning = false;
+let demoSessionId = null; // unique per visitor/session, not shared
+
+function getDemoSessionId() {
+  if (!demoSessionId) {
+    demoSessionId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random();
+  }
+  return demoSessionId;
+}
 
 const TEMPLATE_DESCRIPTIONS = {
   chronicle: "release my savings to my daughter if I don't check in for 6 months",
@@ -18,12 +26,11 @@ function loadTemplate(type) {
   if (input) {
     input.value = desc;
     input.focus();
-    document.getElementById("console").scrollIntoView({ behavior: "smooth" });
-    document.getElementById("compileBtn").click();
+    document.getElementById("compileBtn")?.click();
   }
 }
 
-function startDemo() {
+async function startDemo() {
   if (demoRunning) return;
   demoRunning = true;
   demoSeconds = 30;
@@ -34,16 +41,9 @@ function startDemo() {
   btn.disabled = true;
   btn.textContent = "Demo Running…";
   checkinBtn.disabled = false;
+  display.style.color = "var(--text)";
   status.textContent = "Agent is watching… check in to reset";
   status.style.color = "var(--accent-text)";
-
-  // auto-compile the demo agent
-  const input = document.getElementById("compilerInput");
-  if (input) {
-    input.value = "send a ping transaction if I don't check in within 30 seconds";
-    document.getElementById("console").scrollIntoView({ behavior: "smooth" });
-    setTimeout(() => document.getElementById("compileBtn").click(), 500);
-  }
 
   demoInterval = setInterval(() => {
     demoSeconds--;
@@ -57,12 +57,10 @@ function startDemo() {
       clearInterval(demoInterval);
       demoRunning = false;
       display.textContent = "🔥";
-      status.textContent = "Agent fired! Check Signal Monitor for tx hash.";
-      status.style.color = "var(--accent-text)";
       checkinBtn.disabled = true;
       btn.disabled = false;
       btn.textContent = "Run Demo Again";
-      showDemoTx();
+      fireDemoTx(); // this visitor's own tx, not shared
     }
   }, 1000);
 }
@@ -78,8 +76,29 @@ function doCheckin() {
   }, 1500);
 }
 
-function showDemoTx() {
+// Fires a transaction scoped to THIS visitor's session — not a shared/global demo tx.
+// Calls your backend's demo-signer endpoint, passing a session id so each run is isolated.
+async function fireDemoTx() {
+  const status = document.getElementById("timerStatus");
   const box = document.getElementById("demoTxHash");
-  box.style.display = "block";
-  box.innerHTML = `<span class="pulse"></span> Demo tx fired — <a href="https://www.okx.com/web3/explorer/xlayer-test" target="_blank" style="color:var(--accent-text)">View on X Layer Explorer ↗</a>`;
+  status.textContent = "Broadcasting your demo transaction…";
+  status.style.color = "var(--accent-text)";
+
+  try {
+    const res = await fetch("/api/demo-fire", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId: getDemoSessionId() }),
+    });
+    if (!res.ok) throw new Error("demo-fire failed");
+    const { txHash } = await res.json();
+    status.textContent = "Agent fired! This is your own demo transaction.";
+    box.style.display = "block";
+    box.innerHTML = `<span class="pulse"></span> Your tx — <a href="https://www.okx.com/web3/explorer/xlayer-test/tx/${txHash}" target="_blank" style="color:var(--accent-text)">View on X Layer Explorer ↗</a>`;
+  } catch (err) {
+    console.error("demo-fire error:", err);
+    status.textContent = "Agent fired! Check Signal Monitor for tx hash.";
+    box.style.display = "block";
+    box.innerHTML = `<span class="pulse"></span> Demo tx fired — <a href="https://www.okx.com/web3/explorer/xlayer-test" target="_blank" style="color:var(--accent-text)">View on X Layer Explorer ↗</a>`;
+  }
 }
