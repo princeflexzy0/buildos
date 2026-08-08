@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How it Works — BuildOS</title>
+<link rel="icon" href="assets/logo-full.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="legal.css">
+</head>
+<body>
+<div id="demoModeBanner" class="demo-banner">
+  <span class="pulse"></span> Viewing demo account — real agents, live on X Layer testnet.
+  <button onclick="exitDemoMode()">Exit demo</button>
+</div>
+<header class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand">
+      <div class="logo-hex"><svg viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="#06120D"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.5"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.5"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.25"/></svg></div>
+      <div class="brand-text"><span class="brand-name">BuildOS</span><span class="brand-sub">ONCHAIN AGENTS</span></div>
+    </a>
+    <nav class="nav-links">
+      <a href="templates.html" data-nav="templates">Templates</a>
+      <a href="console.html" data-nav="console">Console</a>
+      <a href="how-it-works.html" data-nav="how-it-works" class="active">How it Works</a>
+      <a href="demo.html" data-nav="demo">Live Demo</a>
+      <a href="https://github.com/princeflexzy0/buildos" target="_blank">GitHub</a>
+    </nav>
+    <div class="nav-right">
+      <span id="walletPill" class="wallet-pill">Not connected</span>
+      <button id="walletBtn" class="btn btn-dark btn-pill" onclick="openWalletModal()">Connect Wallet</button>
+    </div>
+  </div>
+</header>
+
+<main class="page-main">
+
+<section class="page-hero">
+  <span class="section-tag">How it Works</span>
+  <h1>Four steps.<br>Plain English to onchain.</h1>
+  <p class="page-sub">BuildOS turns a sentence into a monitored, self-executing agent on X Layer.</p>
+</section>
+<section class="pipeline-standalone">
+  <div class="pipeline-step-lg">
+    <span class="step-num">01</span>
+    <h3>Describe</h3>
+    <p>Write what you want the agent to do, in plain language — no code, no ABI, no Solidity.</p>
+  </div>
+  <div class="pipeline-step-lg">
+    <span class="step-num">02</span>
+    <h3>Compile</h3>
+    <p>An LLM converts your sentence into a structured, hashed agent config: trigger condition, action, and target.</p>
+  </div>
+  <div class="pipeline-step-lg">
+    <span class="step-num">03</span>
+    <h3>Monitor</h3>
+    <p>Signal Monitor watches real-world triggers — check-ins, oracle feeds, timers — and evaluates when conditions are met.</p>
+  </div>
+  <div class="pipeline-step-lg">
+    <span class="step-num">04</span>
+    <h3>Execute</h3>
+    <p>Once triggered, the verdict is logged and executed on X Layer — verifiable, permanent, and visible on-chain.</p>
+  </div>
+</section>
+<section class="page-cta-band">
+  <h2>See it fire live.</h2>
+  <a href="demo.html" class="btn btn-dark btn-lg">Watch the Live Demo</a>
+  <a href="console.html" class="btn btn-outline btn-lg">Open the Console</a>
+</section>
+
+</main>
+<div id="walletModal" class="wallet-modal">
+  <div class="wallet-modal-box">
+    <h3>Connect a wallet</h3>
+    <p class="modal-sub">Choose which wallet to use on X Layer testnet.</p>
+    <div class="wallet-option" onclick="connectWith('okx')"><img src="assets/wallets/okx.svg" alt="OKX Wallet" onerror="this.style.display='none'"> OKX Wallet</div>
+    <div class="wallet-option" onclick="connectWith('metamask')"><img src="assets/wallets/metamask.svg" alt="MetaMask" onerror="this.style.display='none'"> MetaMask</div>
+    <div class="wallet-modal-close" onclick="closeWalletModal()">Cancel</div>
+  </div>
+</div>
+<footer class="footer">
+  <div class="footer-col">
+    <span class="footer-brand">BuildOS</span>
+    <span>Built for the X Layer AI Season Hackathon</span>
+  </div>
+  <div class="footer-col footer-links">
+    <a href="privacy.html">Privacy</a>
+    <a href="terms.html">Terms</a>
+    <a href="demo-disclosure.html">About Demo Mode</a>
+    <a href="https://github.com/princeflexzy0/buildos" target="_blank">GitHub</a>
+  </div>
+  <div class="footer-col footer-powered">
+    <span>Powered by</span>
+    <span class="footer-badge">X Layer</span>
+    <span class="footer-badge">OKX Wallet</span>
+    <span class="footer-badge">MetaMask</span>
+  </div>
+</footer>
+
+<script src="config.js"></script>
+<script src="wallet.js"></script>
+<script src="app.js"></script>
+<script src="demo.js"></script>
+<script src="demo-mode.js"></script>
+
+</body>
+</html>
