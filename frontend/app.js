@@ -136,6 +136,7 @@ function renderCompiledConfigForReview() {
 
 // ─── Compile ──────────────────────────────────────────────────────────────────
 compileBtn?.addEventListener("click", async () => {
+  console.log("[DEBUG] compileBtn clicked. isDemoMode =", isDemoMode, "connectedAddress =", connectedAddress);
   if (!isDemoMode && !connectedAddress) {
     compilerOutput.textContent = "// connect a wallet or enable Demo Mode first";
     openWalletModal();

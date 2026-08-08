@@ -8,6 +8,7 @@ let isDemoMode = false;
 
 function initDemoModeOnLoad() {
   const stored = localStorage.getItem(DEMO_MODE_KEY);
+  console.log("[DEBUG] initDemoModeOnLoad ran. stored =", stored, "on page:", location.pathname);
   // Default ON unless the user has explicitly turned it off before,
   // or already has a real wallet connected this session.
   const shouldEnable = stored === null ? true : stored === "true";
