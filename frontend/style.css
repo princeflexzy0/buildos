@@ -276,119 +276,6 @@ textarea:focus { outline: none; border-color: var(--accent); }
 .footer-links a:hover::after { width: 100%; }
 .template-icon svg { width: 28px; height: 28px; }
 
-/* ===== Demo page — layered depth aesthetic ===== */
-.demo-standalone {
-  max-width: 480px; margin: 0 auto; padding: 40px 24px 120px;
-  perspective: 1200px;
-}
-.demo-standalone .demo-timer-box {
-  position: relative;
-  background: radial-gradient(120% 120% at 20% 0%, #1f2a24 0%, #0d0f0d 55%, #06120D 100%);
-  border-radius: 24px;
-  padding: 48px 32px;
-  text-align: center;
-  overflow: hidden;
-  box-shadow:
-    0 30px 60px -20px rgba(0,0,0,0.6),
-    0 0 0 1px rgba(0,210,138,0.15),
-    inset 0 1px 0 rgba(255,255,255,0.04);
-  transform: rotateX(2deg);
-  transition: transform 0.4s ease, box-shadow 0.4s ease;
-}
-.demo-standalone .demo-timer-box:hover {
-  transform: rotateX(0deg) translateY(-4px);
-  box-shadow:
-    0 40px 80px -20px rgba(0,0,0,0.65),
-    0 0 0 1px rgba(0,210,138,0.3),
-    0 0 60px -10px rgba(0,210,138,0.25);
-}
-
-/* animated grid backdrop, classic depth-crypto texture */
-.demo-standalone .demo-timer-box::before {
-  content: "";
-  position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(0,210,138,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,210,138,0.06) 1px, transparent 1px);
-  background-size: 28px 28px;
-  mask-image: radial-gradient(circle at 50% 30%, black 0%, transparent 75%);
-  animation: gridDrift 12s linear infinite;
-}
-@keyframes gridDrift {
-  from { background-position: 0 0, 0 0; }
-  to { background-position: 28px 28px, 28px 28px; }
-}
-
-/* glowing orb floating behind the number */
-.demo-standalone .demo-timer-box::after {
-  content: "";
-  position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
-  width: 260px; height: 260px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(0,210,138,0.35) 0%, transparent 70%);
-  filter: blur(10px);
-  pointer-events: none;
-}
-
-.demo-standalone .timer-label,
-.demo-standalone .timer-unit,
-.demo-standalone .timer-status,
-.demo-standalone .timer-display,
-.demo-standalone #demoBtn,
-.demo-standalone .checkin-row,
-.demo-standalone .demo-tx {
-  position: relative; z-index: 2;
-}
-
-.demo-standalone .timer-display {
-  font-size: 108px;
-  text-shadow: 0 0 40px rgba(0,210,138,0.5), 0 0 80px rgba(0,210,138,0.2);
-  transition: text-shadow 0.3s ease, color 0.3s ease;
-}
-.demo-standalone .timer-status {
-  font-family: var(--font-mono);
-  letter-spacing: 0.02em;
-}
-
-.demo-standalone #demoBtn {
-  width: 100%; margin-top: 16px;
-  background: linear-gradient(135deg, #00D28A 0%, #00A86B 100%);
-  box-shadow: 0 8px 24px -6px rgba(0,210,138,0.5);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.demo-standalone #demoBtn:hover:not(:disabled) {
-  transform: translateY(-2px) scale(1.01);
-  box-shadow: 0 12px 32px -6px rgba(0,210,138,0.65);
-}
-
-.demo-standalone .checkin-row .btn-green {
-  background: rgba(0,210,138,0.12);
-  border: 1px solid rgba(0,210,138,0.4);
-  color: #00D28A;
-  box-shadow: none;
-}
-.demo-standalone .checkin-row .btn-green:hover:not(:disabled) {
-  background: rgba(0,210,138,0.2);
-  transform: translateY(-1px);
-}
-
-.demo-standalone .demo-tx {
-  background: rgba(0,210,138,0.08);
-  border: 1px solid rgba(0,210,138,0.25);
-  border-radius: 12px;
-  padding: 10px 14px;
-  margin-top: 20px;
-}
-
-/* page hero on demo.html gets a subtle glow badge too */
-#demoBanner-eyebrow, .page-hero .section-tag {
-  text-shadow: 0 0 20px rgba(0,210,138,0.4);
-}
-
-@media (max-width: 700px) {
-  .demo-standalone .timer-display { font-size: 80px; }
-  .demo-standalone .demo-timer-box { padding: 36px 24px; }
-}
-
 /* ===== Nav — consistent everywhere, real transitions ===== */
 .nav-links a {
   position: relative;
@@ -424,3 +311,48 @@ textarea:focus { outline: none; border-color: var(--accent); }
 
 /* home-main needs no extra top padding since hero already has its own */
 .home-main { display: block; }
+
+/* ===== Demo page — on-brand light card with green depth, not a black box ===== */
+.demo-standalone { max-width: 480px; margin: 0 auto; padding: 40px 24px 120px; }
+.demo-standalone .demo-timer-box {
+  position: relative;
+  background: linear-gradient(160deg, #FFFFFF 0%, var(--surface) 100%);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 48px 32px;
+  text-align: center;
+  overflow: hidden;
+  box-shadow: 0 20px 50px -20px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.6);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.demo-standalone .demo-timer-box:hover { transform: translateY(-3px); box-shadow: 0 28px 60px -18px rgba(0,0,0,0.15); }
+.demo-standalone .demo-timer-box::before {
+  content: ""; position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(0,210,138,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,210,138,0.05) 1px, transparent 1px);
+  background-size: 26px 26px;
+  mask-image: radial-gradient(circle at 50% 20%, black 0%, transparent 70%);
+}
+.demo-standalone .demo-timer-box::after {
+  content: ""; position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
+  width: 240px; height: 240px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,210,138,0.18) 0%, transparent 70%);
+  filter: blur(8px); pointer-events: none;
+}
+.demo-standalone .timer-label,.demo-standalone .timer-unit,.demo-standalone .timer-status,
+.demo-standalone .timer-display,.demo-standalone #demoBtn,.demo-standalone #demoStopBtn,
+.demo-standalone .checkin-row,.demo-standalone .demo-tx { position: relative; z-index: 2; }
+.demo-standalone .timer-label { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; }
+.demo-standalone .timer-display { font-family: var(--font-display); font-size: 96px; font-weight: 700; color: var(--text); line-height: 1; margin: 4px 0; transition: color 0.3s ease; }
+.demo-standalone .timer-unit { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); margin-bottom: 14px; }
+.demo-standalone .timer-status { font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); margin-bottom: 18px; min-height: 18px; }
+.demo-standalone #demoBtn, .demo-standalone #demoStopBtn { width: 100%; margin-top: 8px; }
+.demo-standalone #demoStopBtn { margin-top: 10px; }
+.demo-standalone .checkin-row { margin-top: 12px; }
+.demo-standalone .demo-tx { margin-top: 18px; font-family: var(--font-mono); font-size: 12px; padding: 10px 14px; border-radius: 12px; }
+.demo-tx-success { background: var(--accent-bg); border: 1px solid var(--accent-border); color: var(--accent-text); }
+.demo-tx-success a { color: var(--accent-text); font-weight: 600; }
+.demo-tx-error { background: #FFF3F2; border: 1px solid #F5C2BE; color: #B3261E; text-align: left; }
+
+@media (max-width: 700px) { .demo-standalone .timer-display { font-size: 72px; } .demo-standalone .demo-timer-box { padding: 36px 24px; } }
+.footer-badge-primary { font-weight: 700; }
+.footer-secondary-note { font-family: var(--font-mono); font-size: 10px; color: #999; margin-top: 6px; display: block; }

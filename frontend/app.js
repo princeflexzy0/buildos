@@ -157,3 +157,24 @@ window.addEventListener("DOMContentLoaded", () => {
     openWalletModal();
   }
 });
+
+// Require explicit human confirmation of amount/recipient before enabling
+// the onchain commit — closes the gap between "app displayed X" and
+// "wallet is about to sign X."
+function requireCommitConfirmation(compiledConfig) {
+  const commitBtn = document.getElementById("commitBtn");
+  if (!commitBtn) return;
+  commitBtn.disabled = true;
+  commitBtn.onclick = () => {
+    const summary = `You're about to commit this agent onchain:\n\n` +
+      `Action: ${compiledConfig.action}\n` +
+      `Amount: ${compiledConfig.amount || "n/a"}\n` +
+      `Recipient: ${compiledConfig.recipient || "n/a"}\n` +
+      `Trigger: ${compiledConfig.trigger || "n/a"}\n\n` +
+      `Your wallet will ask you to confirm the exact transaction next. Continue?`;
+    if (confirm(summary)) {
+      commitOnchain(compiledConfig); // your existing commit function
+    }
+  };
+  commitBtn.disabled = false;
+}

@@ -150,6 +150,7 @@ demo_body = '''
     <div class="timer-unit">seconds</div>
     <div class="timer-status" id="timerStatus">Press Start to begin</div>
     <button class="btn btn-dark btn-lg" id="demoBtn" onclick="startDemo()">Start Live Demo</button>
+    <button class="btn btn-outline btn-lg" id="demoStopBtn" onclick="stopDemo()" style="display:none">Stop Demo</button>
     <div class="checkin-row">
       <button class="btn btn-green btn-block" id="checkinBtn" onclick="doCheckin()" disabled>✓ Check In (Reset Timer)</button>
     </div>

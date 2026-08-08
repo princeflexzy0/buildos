@@ -1,12 +1,10 @@
 let demoInterval = null;
 let demoSeconds = 30;
 let demoRunning = false;
-let demoSessionId = null; // unique per visitor/session, not shared
+let demoSessionId = null;
 
 function getDemoSessionId() {
-  if (!demoSessionId) {
-    demoSessionId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random();
-  }
+  if (!demoSessionId) demoSessionId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random();
   return demoSessionId;
 }
 
@@ -23,25 +21,43 @@ function loadTemplate(type) {
   const desc = TEMPLATE_DESCRIPTIONS[type];
   if (!desc) return;
   const input = document.getElementById("compilerInput");
-  if (input) {
-    input.value = desc;
-    input.focus();
-    document.getElementById("compileBtn")?.click();
-  }
+  if (input) { input.value = desc; input.focus(); document.getElementById("compileBtn")?.click(); }
 }
 
-async function startDemo() {
+function resetDemoUI() {
+  clearInterval(demoInterval);
+  demoRunning = false;
+  demoSeconds = 30;
+  const display = document.getElementById("timerDisplay");
+  const status = document.getElementById("timerStatus");
+  const btn = document.getElementById("demoBtn");
+  const stopBtn = document.getElementById("demoStopBtn");
+  const checkinBtn = document.getElementById("checkinBtn");
+  display.textContent = "30";
+  display.style.color = "";
+  status.textContent = "Press Start to begin";
+  status.style.color = "";
+  btn.disabled = false;
+  btn.textContent = "Start Live Demo";
+  btn.style.display = "";
+  stopBtn.style.display = "none";
+  checkinBtn.disabled = true;
+  document.getElementById("demoTxHash").style.display = "none";
+}
+
+function startDemo() {
   if (demoRunning) return;
   demoRunning = true;
   demoSeconds = 30;
   const btn = document.getElementById("demoBtn");
+  const stopBtn = document.getElementById("demoStopBtn");
   const checkinBtn = document.getElementById("checkinBtn");
   const status = document.getElementById("timerStatus");
   const display = document.getElementById("timerDisplay");
-  btn.disabled = true;
-  btn.textContent = "Demo Running…";
+  btn.style.display = "none";
+  stopBtn.style.display = "block";
   checkinBtn.disabled = false;
-  display.style.color = "var(--text)";
+  display.style.color = "";
   status.textContent = "Agent is watching… check in to reset";
   status.style.color = "var(--accent-text)";
 
@@ -58,26 +74,36 @@ async function startDemo() {
       demoRunning = false;
       display.textContent = "🔥";
       checkinBtn.disabled = true;
-      btn.disabled = false;
+      stopBtn.style.display = "none";
+      btn.style.display = "";
       btn.textContent = "Run Demo Again";
-      fireDemoTx(); // this visitor's own tx, not shared
+      fireDemoTx();
     }
   }, 1000);
+}
+
+// Explicit stop/pause — cancels the countdown, no tx fires
+function stopDemo() {
+  if (!demoRunning) return;
+  clearInterval(demoInterval);
+  demoRunning = false;
+  document.getElementById("timerStatus").textContent = "Demo stopped — no transaction fired";
+  document.getElementById("timerStatus").style.color = "var(--text-dim)";
+  document.getElementById("demoStopBtn").style.display = "none";
+  document.getElementById("demoBtn").style.display = "";
+  document.getElementById("demoBtn").textContent = "Start Live Demo";
+  document.getElementById("checkinBtn").disabled = true;
 }
 
 function doCheckin() {
   if (!demoRunning) return;
   demoSeconds = 30;
-  document.getElementById("timerDisplay").style.color = "var(--text)";
+  document.getElementById("timerDisplay").style.color = "";
   document.getElementById("timerStatus").textContent = "✓ Checked in — timer reset";
   document.getElementById("timerStatus").style.color = "var(--accent-text)";
-  setTimeout(() => {
-    if (demoRunning) document.getElementById("timerStatus").textContent = "Agent is watching… check in to reset";
-  }, 1500);
+  setTimeout(() => { if (demoRunning) document.getElementById("timerStatus").textContent = "Agent is watching… check in to reset"; }, 1500);
 }
 
-// Fires a transaction scoped to THIS visitor's session — not a shared/global demo tx.
-// Calls your backend's demo-signer endpoint, passing a session id so each run is isolated.
 async function fireDemoTx() {
   const status = document.getElementById("timerStatus");
   const box = document.getElementById("demoTxHash");
@@ -90,15 +116,21 @@ async function fireDemoTx() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sessionId: getDemoSessionId() }),
     });
-    if (!res.ok) throw new Error("demo-fire failed");
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody.error || `Server returned ${res.status}`);
+    }
     const { txHash } = await res.json();
-    status.textContent = "Agent fired! This is your own demo transaction.";
+    status.textContent = "Agent fired! This is your own live testnet transaction.";
     box.style.display = "block";
-    box.innerHTML = `<span class="pulse"></span> Your tx — <a href="https://www.okx.com/web3/explorer/xlayer-test/tx/${txHash}" target="_blank" style="color:var(--accent-text)">View on X Layer Explorer ↗</a>`;
+    box.className = "demo-tx demo-tx-success";
+    box.innerHTML = `<span class="pulse"></span> Your tx — <a href="https://www.okx.com/web3/explorer/xlayer-test/tx/${txHash}" target="_blank">${txHash.slice(0,10)}…${txHash.slice(-6)} ↗</a>`;
   } catch (err) {
     console.error("demo-fire error:", err);
-    status.textContent = "Agent fired! Check Signal Monitor for tx hash.";
+    status.textContent = "Couldn't reach the demo signer.";
+    status.style.color = "#E24B4A";
     box.style.display = "block";
-    box.innerHTML = `<span class="pulse"></span> Demo tx fired — <a href="https://www.okx.com/web3/explorer/xlayer-test" target="_blank" style="color:var(--accent-text)">View on X Layer Explorer ↗</a>`;
+    box.className = "demo-tx demo-tx-error";
+    box.innerHTML = `⚠️ Demo backend unreachable (${err.message}). This means the live tx couldn't be sent — check the server is running and the demo wallet is funded.`;
   }
 }
