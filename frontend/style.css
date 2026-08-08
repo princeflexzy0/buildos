@@ -388,3 +388,39 @@ textarea:focus { outline: none; border-color: var(--accent); }
   .demo-standalone .timer-display { font-size: 80px; }
   .demo-standalone .demo-timer-box { padding: 36px 24px; }
 }
+
+/* ===== Nav — consistent everywhere, real transitions ===== */
+.nav-links a {
+  position: relative;
+  padding: 4px 0;
+  transition: color 0.2s ease;
+}
+.nav-links a::after {
+  content: "";
+  position: absolute; left: 0; bottom: -4px; width: 0; height: 2px;
+  background: var(--accent); border-radius: 2px;
+  transition: width 0.25s ease;
+}
+.nav-links a:hover::after,
+.nav-links a.active::after { width: 100%; }
+.nav-links a.active { color: var(--text); font-weight: 600; }
+
+.wallet-pill { transition: color 0.2s ease; }
+
+#walletBtn {
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+#walletBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+#walletBtn.connected:hover {
+  box-shadow: 0 6px 16px rgba(0,210,138,0.25);
+}
+
+.nav {
+  transition: box-shadow 0.2s ease;
+}
+
+/* home-main needs no extra top padding since hero already has its own */
+.home-main { display: block; }

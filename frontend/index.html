@@ -15,22 +15,17 @@
   <span class="pulse"></span> Viewing demo account — real agents, live on X Layer testnet.
   <button onclick="exitDemoMode()">Exit demo</button>
 </div>
-
 <header class="nav">
   <div class="nav-inner">
-    <div class="brand">
-      <div class="logo-hex">
-        <svg viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="#06120D"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.5"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.5"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.25"/></svg>
-      </div>
-      <div class="brand-text">
-        <span class="brand-name">BuildOS</span>
-        <span class="brand-sub">ONCHAIN AGENTS</span>
-      </div>
-    </div>
+    <a href="index.html" class="brand">
+      <div class="logo-hex"><svg viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="#06120D"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.5"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.5"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.25"/></svg></div>
+      <div class="brand-text"><span class="brand-name">BuildOS</span><span class="brand-sub">ONCHAIN AGENTS</span></div>
+    </a>
     <nav class="nav-links">
-      <a href="templates.html">Templates</a>
-      <a href="console.html">Console</a>
-      <a href="how-it-works.html">How it Works</a>
+      <a href="templates.html" data-nav="templates">Templates</a>
+      <a href="console.html" data-nav="console">Console</a>
+      <a href="how-it-works.html" data-nav="how-it-works">How it Works</a>
+      <a href="demo.html" data-nav="demo">Live Demo</a>
       <a href="https://github.com/princeflexzy0/buildos" target="_blank">GitHub</a>
     </nav>
     <div class="nav-right">
@@ -40,6 +35,7 @@
   </div>
 </header>
 
+<main class="home-main">
 <!-- HERO -->
 <section class="hero">
   <span class="eyebrow"><span class="dot"></span> Natural Language → Live Onchain Agents on X Layer</span>
@@ -101,18 +97,7 @@
 
 
 <!-- LIVE CONSOLE -->
-
-
-<footer class="footer">
-  <span>BuildOS — built for the X Layer AI Season Hackathon · <a href="https://github.com/princeflexzy0/buildos" target="_blank">GitHub</a></span>
-  <span><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="demo-disclosure.html">About Demo Mode</a> · Powered by X Layer · OKX Wallet · MetaMask</span>
-</footer>
-
-<script src="config.js"></script>
-<script src="wallet.js"></script>
-<script src="app.js"></script>
-<script src="demo.js"></script>
-
+</main>
 <div id="walletModal" class="wallet-modal">
   <div class="wallet-modal-box">
     <h3>Connect a wallet</h3>
@@ -122,6 +107,33 @@
     <div class="wallet-modal-close" onclick="closeWalletModal()">Cancel</div>
   </div>
 </div>
+<footer class="footer">
+  <div class="footer-col">
+    <span class="footer-brand">BuildOS</span>
+    <span>Built for the X Layer AI Season Hackathon · 2026</span>
+    <span class="footer-copyright">© 2026 BuildOS. All rights reserved.</span>
+  </div>
+  <div class="footer-col footer-links">
+    <a href="privacy.html">Privacy</a>
+    <a href="terms.html">Terms</a>
+    <a href="demo-disclosure.html">About Demo Mode</a>
+    <a href="https://github.com/princeflexzy0/buildos" target="_blank">GitHub</a>
+  </div>
+  <div class="footer-col footer-powered">
+    <span class="footer-powered-label">Powered by</span>
+    <div class="footer-badge-row">
+      <span class="footer-badge"><img src="assets/badges/xlayer.svg" alt="" onerror="this.style.display='none'"> X Layer</span>
+      <span class="footer-badge"><img src="assets/wallets/okx.svg" alt="" onerror="this.style.display='none'"> OKX Wallet</span>
+      <span class="footer-badge"><img src="assets/wallets/metamask.svg" alt="" onerror="this.style.display='none'"> MetaMask</span>
+    </div>
+  </div>
+</footer>
+
+<script src="config.js"></script>
+<script src="wallet.js"></script>
+<script src="app.js"></script>
+<script src="demo.js"></script>
 <script src="demo-mode.js"></script>
+
 </body>
 </html>
