@@ -27,6 +27,26 @@ async function checkHealth() {
   }
 }
 
+// ─── Wallet balance ───────────────────────────────────────────────────────────
+async function fetchWalletBalance(address) {
+  const balBar = document.getElementById("walletBalanceBar");
+  if (!balBar || !address) return;
+  balBar.style.display = "flex";
+  balBar.innerHTML = `<span>Balance:</span> <strong>loading…</strong>`;
+  try {
+    const rpc = "https://testrpc.xlayer.tech";
+    const res = await fetch(rpc, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_getBalance", params: [address, "latest"] }),
+    });
+    const json = await res.json();
+    const okb = (parseInt(json.result, 16) / 1e18).toFixed(4);
+    balBar.innerHTML = `<span>Wallet balance (testnet):</span> <strong>${okb} OKB</strong>`;
+  } catch {
+    balBar.innerHTML = `<span>Balance unavailable</span>`;
+  }
+}
+
 // ─── Normalize compiler response ──────────────────────────────────────────────
 function normalizeConfig(raw) {
   const trigger = raw.triggers?.[0];
@@ -120,6 +140,10 @@ compileBtn.addEventListener("click", async () => {
     openWalletModal();
     return;
   }
+  const amountInput = document.getElementById("amountInput");
+  const tokenSelect = document.getElementById("tokenSelect");
+  const manualAmount = amountInput?.value?.trim();
+  const manualToken = tokenSelect?.value || "OKB";
   const description = compilerInput.value.trim();
   if (description.length < 5) {
     compilerOutput.textContent = "// enter a longer description first";
@@ -142,6 +166,11 @@ compileBtn.addEventListener("click", async () => {
     if (!data.success) throw new Error(data.error || "compile failed");
     rawConfig = data.config;
     currentConfig = normalizeConfig(rawConfig);
+    // Override with manually entered amount/token if provided
+    if (manualAmount && !isNaN(Number(manualAmount))) {
+      currentConfig.amount = manualAmount;
+      currentConfig.token = manualToken;
+    }
     renderCompiledConfigForReview();
     registerBtn.disabled = false;
   } catch (err) {
@@ -320,6 +349,8 @@ async function refreshAgents() {
 window.onWalletDisconnect = () => {
   commitBtn.disabled = true;
   registerBtn.disabled = true;
+  const balBar = document.getElementById("walletBalanceBar");
+  if (balBar) balBar.style.display = "none";
   refreshAgents();
 };
 
@@ -327,6 +358,7 @@ window.onWalletDisconnect = () => {
 window.onWalletConnect = (address) => {
   refreshAgents();
   if (currentConfig) updateCommitGate();
+  fetchWalletBalance(address);
 };
 
 refreshBtn.addEventListener("click", refreshAgents);

@@ -1,0 +1,110 @@
+{
+  "0xTEST123": {
+    "configHash": "0xTEST123",
+    "agentType": "Guardian",
+    "label": "Test Agent",
+    "owner": "0xabcdef1234567890abcdef1234567890abcdef12",
+    "registeredAt": 1786186984,
+    "lastCheckin": 1786186984,
+    "signals": [],
+    "triggers": [],
+    "consensusRule": "all",
+    "consensusMet": false,
+    "executedAt": null,
+    "config": {
+      "agentType": "Guardian",
+      "label": "Test Agent",
+      "configHash": "0xTEST123",
+      "signals": [],
+      "triggers": [],
+      "consensusRule": "all"
+    },
+    "onchain": {
+      "committed": false,
+      "agentId": null,
+      "agentContractAddress": null,
+      "createTxHash": null,
+      "verdictTxHash": null,
+      "registerTxHash": null
+    }
+  },
+  "0xa5db022570a5a351070c8bf3947ea979b0984aa6493cdcbcc72fd6b06188067c": {
+    "configHash": "0xa5db022570a5a351070c8bf3947ea979b0984aa6493cdcbcc72fd6b06188067c",
+    "agentType": "Custom",
+    "label": "Test Flow",
+    "owner": "demo",
+    "registeredAt": 1786187112,
+    "lastCheckin": 1786187112,
+    "signals": [
+      {
+        "signalType": "custom",
+        "source": "test confirmation source",
+        "description": "Confirmation for testing",
+        "fired": false,
+        "firedAt": null
+      }
+    ],
+    "triggers": [
+      {
+        "type": "custom",
+        "description": "Trigger for testing purposes",
+        "thresholdSeconds": 0,
+        "thresholdValue": null,
+        "source": "test source"
+      }
+    ],
+    "consensusRule": "any",
+    "consensusMet": false,
+    "executedAt": null,
+    "config": {
+      "agentType": "Custom",
+      "version": "1.0.0",
+      "label": "Test Flow",
+      "description": "A custom agent to test a specific flow.",
+      "triggers": [
+        {
+          "type": "custom",
+          "description": "Trigger for testing purposes",
+          "thresholdSeconds": 0,
+          "thresholdValue": null,
+          "source": "test source"
+        }
+      ],
+      "signals": [
+        {
+          "signalType": "custom",
+          "source": "test confirmation source",
+          "description": "Confirmation for testing"
+        }
+      ],
+      "consensusRule": "any",
+      "consensusDescription": "Agent fires when any condition is met",
+      "action": {
+        "type": "custom",
+        "description": "Test action",
+        "requiresBeneficiary": false,
+        "requiresPayload": false
+      },
+      "checkinRequired": false,
+      "checkinIntervalDays": 0,
+      "estimatedMaxSpendWei": "1000000000000000000",
+      "permissions": {
+        "ownerCanCancel": true,
+        "ownerCanUpdateBeneficiary": false,
+        "ownerCanExtendTimeout": false
+      },
+      "demoNotes": "Demonstrate the test flow execution.",
+      "compiledAt": "2026-08-08T11:05:01.882Z",
+      "inputDescription": "test this flow",
+      "configHash": "0xa5db022570a5a351070c8bf3947ea979b0984aa6493cdcbcc72fd6b06188067c"
+    },
+    "onchain": {
+      "committed": true,
+      "agentId": "3",
+      "agentContractAddress": "0xf99A8f3679d04b6D3c5a0F20f65755d49Bb88D34",
+      "createTxHash": "0x24881e26b6ebc36520bfa941d640769cf90be13be29d54b42ded7cf7edd7bbe0",
+      "verdictTxHash": null,
+      "registerTxHash": null
+    }
+  }
+}
