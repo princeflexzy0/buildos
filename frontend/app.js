@@ -116,13 +116,28 @@ function renderCompiledConfigForReview() {
     <div class="config-review">
       <div class="config-row"><label>Agent</label><span>${currentConfig.label}</span></div>
       <div class="config-row"><label>Action</label><span>${currentConfig.action}</span></div>
-      <div class="config-row"><label>Amount</label><span>${currentConfig.amount ?? "—"} ${currentConfig.token || ""}</span></div>
+      <div class="config-row">
+        <label>Amount</label>
+        <span class="amount-edit-wrap">
+          <input type="number" id="amountInput" placeholder="0.0" min="0" step="any"
+                 value="${currentConfig.amount ?? ""}">
+          <select id="tokenSelect">
+            <option value="OKB" ${(!currentConfig.token || currentConfig.token === "OKB") ? "selected" : ""}>OKB</option>
+            <option value="USDT" ${currentConfig.token === "USDT" ? "selected" : ""}>USDT</option>
+            <option value="USDC" ${currentConfig.token === "USDC" ? "selected" : ""}>USDC</option>
+          </select>
+        </span>
+      </div>
       <div class="config-row ${addrValid ? "" : "config-row-warn"}">
         <label>Recipient</label>
         <input type="text" id="recipientInput" placeholder="0x… wallet address"
                value="${addrValid ? currentConfig.recipient : ""}">
       </div>
       <div class="config-row"><label>Trigger</label><span>${currentConfig.trigger}${days ? ` (${days} days)` : ""}</span></div>
+      <div class="config-row" id="balanceRow" style="display:none">
+        <label>Escrow Balance</label>
+        <span id="balanceValue">—</span>
+      </div>
       ${!addrValid ? `<div class="config-warning">⚠️ No wallet address found. Paste a valid 0x… address above to unlock Register and Commit.</div>` : ""}
     </div>`;
   document.getElementById("recipientInput")?.addEventListener("input", e => {
@@ -130,8 +145,33 @@ function renderCompiledConfigForReview() {
     updateCommitGate();
     if (isValidAddress(currentConfig.recipient)) estimateAndShowGas(currentConfig);
   });
+  document.getElementById("amountInput")?.addEventListener("input", e => {
+    currentConfig.amount = e.target.value;
+    if (addrValid) estimateAndShowGas(currentConfig);
+  });
+  document.getElementById("tokenSelect")?.addEventListener("change", e => {
+    currentConfig.token = e.target.value;
+    if (addrValid) estimateAndShowGas(currentConfig);
+  });
   if (addrValid) estimateAndShowGas(currentConfig);
   updateCommitGate();
+}
+
+async function refreshAgentBalance(agentId) {
+  const row = document.getElementById("balanceRow");
+  const val = document.getElementById("balanceValue");
+  if (!row || !val || !agentId) return;
+  try {
+    const res = await fetch(`${MONITOR_URL}/agent/${agentId}`);
+    const data = await res.json();
+    if (data.success && data.agent) {
+      row.style.display = "flex";
+      const balanceEth = data.agent.balance ? (Number(data.agent.balance) / 1e18).toFixed(4) : "0.0000";
+      val.textContent = `${balanceEth} ${currentConfig.token || "OKB"}`;
+    }
+  } catch (e) {
+    console.warn("Could not fetch agent balance:", e);
+  }
 }
 
 // ─── Compile ──────────────────────────────────────────────────────────────────
