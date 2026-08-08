@@ -124,6 +124,45 @@
     </ul>
   </div>
 </section>
+
+<section class="page-hero" style="padding-top:8px">
+  <span class="section-tag">Fund Safety</span>
+  <h2>Your funds sit in a contract. Not in our wallet.</h2>
+  <p class="page-sub">Agents with a payout can lock the amount in a non-custodial escrow contract until the trigger fires. Nobody — including BuildOS — can move it early.</p>
+</section>
+<section class="pipeline-standalone">
+  <div class="pipeline-step-lg">
+    <span class="step-num">A</span>
+    <h3>Deposit</h3>
+    <p>When you register an agent with a payout, you choose a lock duration and send the amount straight to the <strong>EscrowVault</strong> smart contract — not to a BuildOS wallet.</p>
+    <div class="how-example">
+      <span class="how-example-label">Who holds it</span>
+      <span class="how-example-text">The contract address. No admin key, no owner override, no way for BuildOS to withdraw early.</span>
+    </div>
+  </div>
+  <div class="pipeline-step-lg">
+    <span class="step-num">B</span>
+    <h3>Locked</h3>
+    <p>Funds are unreachable until the unlock time passes. Every deposit is verifiable on the X Layer explorer, deposit ID and all.</p>
+    <div class="how-example">
+      <span class="how-example-label">Fee</span>
+      <span class="how-example-text">A 1% protocol fee is taken on withdrawal — shown upfront, same for everyone, written into the contract.</span>
+    </div>
+  </div>
+  <div class="pipeline-step-lg">
+    <span class="step-num">C</span>
+    <h3>Auto-unlocks</h3>
+    <p>Once the unlock time passes, the recipient withdraws directly from the contract. If it's never claimed, the depositor can reclaim it after a 90-day grace period so funds are never stranded.</p>
+    <div class="how-example">
+      <span class="how-example-label">Verify it yourself</span>
+      <span class="how-example-text">View the escrow contract on the X Layer explorer — every deposit, unlock time, and withdrawal is public.</span>
+    </div>
+  </div>
+</section>
+<div style="text-align:center;margin:-24px 0 48px">
+  <a href="https://www.okx.com/web3/explorer/xlayer-test/address/0xE6ab6b4B168af36f6bd0dAc5caC15d99aC07bAfe" target="_blank" class="btn btn-outline">View Escrow Contract on Explorer ↗</a>
+</div>
+
 <section class="page-section">
   <h2 style="text-align:center;margin-bottom:32px">Frequently asked</h2>
   <div class="faq-grid">
@@ -150,6 +189,14 @@
     <div class="faq-item">
       <h4>What tokens are supported?</h4>
       <p>OKB, USDT, and USDC on X Layer testnet. Mainnet support is on the roadmap.</p>
+    </div>
+    <div class="faq-item">
+      <h4>Does escrow charge a fee?</h4>
+      <p>Yes — a 1% protocol fee is taken on withdrawal, written directly into the contract. It's the same for every deposit and visible on-chain, not something BuildOS can change after the fact.</p>
+    </div>
+    <div class="faq-item">
+      <h4>What if the recipient never claims it?</h4>
+      <p>After the unlock time, the recipient has an open window to withdraw. If it's never claimed within 90 days of unlock, the original depositor can reclaim the funds instead, so nothing is stranded forever.</p>
     </div>
   </div>
 </section>
