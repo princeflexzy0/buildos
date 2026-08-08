@@ -13,15 +13,13 @@
 
 <header class="nav">
   <div class="nav-inner">
-    <div class="brand">
-      <img src="assets/logo-full.png" alt="BuildOS" class="brand-mark">
-    </div>
+    <div class="brand"><img src="assets/logo-full.png" class="brand-img" alt="BuildOS"></div>
     <nav class="nav-links">
       <a href="#console">Console</a>
       <a href="#pipeline">Pipeline</a>
       <a href="https://github.com/princeflexzy0/buildos" target="_blank">GitHub</a>
     </nav>
-    <a href="#console" class="btn btn-pill">Launch Console</a>
+    <a href="#console" class="btn btn-dark btn-pill">Launch Console</a>
   </div>
 </header>
 
@@ -29,7 +27,50 @@
   <span class="eyebrow"><span class="dot"></span> Natural language → live onchain agents</span>
   <h1>Describe it.<br>Watch it <span class="accent">go onchain.</span></h1>
   <p class="sub">BuildOS compiles plain English into a structured agent config, registers it with a live signal monitor, and deploys it as a real smart contract on X Layer — no code required.</p>
-  <a href="#console" class="btn btn-pill btn-lg">Open the Console</a>
+  <div class="cta-row">
+    <a href="#console" class="btn btn-green btn-lg">Open the Console</a>
+    <a href="https://github.com/princeflexzy0/buildos" target="_blank" class="btn btn-outline btn-lg">View on GitHub</a>
+  </div>
+
+  <div class="hero-mockup">
+    <div class="mockup-bar">
+      <span class="mb-dot" style="background:#FF5F57"></span>
+      <span class="mb-dot" style="background:#FEBC2E"></span>
+      <span class="mb-dot" style="background:#28C840"></span>
+      <span class="mb-url">buildos.app · Live Console</span>
+    </div>
+    <div class="mockup-body">
+      <div class="mp-col">
+        <div class="panel-tag">Compiler</div>
+        <div class="fake-input">release my savings to my daughter if I don't check in for 6 months</div>
+        <div class="fake-btn">Compile</div>
+        <div class="fake-code">
+          <span class="ck">"agentType"</span>: <span class="cs">"Chronicle"</span>,<br>
+          <span class="ck">"label"</span>: <span class="cs">"Savings Release"</span>,<br>
+          <span class="ck">"configHash"</span>: <span class="cs">"0xb9a5…c04"</span>,<br>
+          <span class="ck">"action"</span>: <span class="cs">"release_funds"</span>
+        </div>
+      </div>
+      <div class="mp-col mp-col-right">
+        <div class="panel-tag">Signal Monitor</div>
+        <div class="fake-card">
+          <div class="fc-head">
+            <span class="fc-name">Chronicle</span>
+            <span class="badge-on">onchain</span>
+          </div>
+          <div class="fc-hash">0xb9a588609ada9eafc5c3c931d7bbd0…c04</div>
+          <div class="fc-links">
+            <a href="#">contract ↗</a>
+            <a href="#">create tx ↗</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mockup-status">
+      <span class="pulse"></span>
+      <span class="status-text">compiler: ready · monitor: online · X Layer testnet</span>
+    </div>
+  </div>
 </section>
 
 <section class="pipeline" id="pipeline">
@@ -65,22 +106,19 @@
       <span class="pulse"></span> connecting…
     </div>
   </div>
-
   <div class="console-grid">
-
     <div class="panel">
       <div class="panel-head">
         <span class="panel-label">Compiler</span>
       </div>
       <textarea id="compilerInput" placeholder="e.g. release my savings to my daughter if I don't check in for 6 months"></textarea>
-      <button id="compileBtn" class="btn btn-block">Compile</button>
+      <button id="compileBtn" class="btn btn-green btn-block">Compile</button>
       <pre id="compilerOutput" class="code-block">// compiled config will appear here</pre>
       <div class="action-row">
         <button id="registerBtn" class="btn btn-secondary" disabled>Register with Monitor</button>
         <button id="commitBtn" class="btn btn-secondary" disabled>Commit Onchain</button>
       </div>
     </div>
-
     <div class="panel">
       <div class="panel-head">
         <span class="panel-label">Signal Monitor</span>
@@ -90,7 +128,6 @@
         <p class="empty-state">No agents registered yet. Compile one on the left to get started.</p>
       </div>
     </div>
-
   </div>
 </section>
 
