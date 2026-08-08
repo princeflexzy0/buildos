@@ -175,7 +175,7 @@ console_body = '''
       <div class="panel-head"><span class="panel-label">Compiler</span></div>
       <textarea id="compilerInput" placeholder="e.g. release my savings to my daughter if I don't check in for 6 months"></textarea>
       <button id="compileBtn" class="btn btn-green btn-block">Compile</button>
-      <pre id="compilerOutput" class="code-block">// compiled config will appear here</pre>
+      <div id="compilerOutput" class="code-block">// compiled config will appear here</div>
       <div id="gasEstimateBox" class="gas-estimate" style="display:none"></div>
       <div class="action-row">
         <button id="registerBtn" class="btn btn-secondary" disabled>Register with Monitor</button>
