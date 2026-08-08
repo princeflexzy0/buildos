@@ -147,6 +147,11 @@ function renderCompiledConfigForReview() {
             <option value="14" selected>14 days</option>
             <option value="30">30 days</option>
           </select>
+          <select id="escrowTokenSelect" title="ERC-20 escrow deposits are coming soon">
+            <option value="NATIVE">OKB (native)</option>
+            <option value="USDT" disabled>USDT (coming soon)</option>
+            <option value="USDC" disabled>USDC (coming soon)</option>
+          </select>
           <button class="btn-small btn-primary" id="depositEscrowBtn">Deposit to Escrow</button>
         </span>
       </div>
