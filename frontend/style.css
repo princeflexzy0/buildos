@@ -16,11 +16,11 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--text); font-family: var(--font-body); line-height: 1.5; }
+body { background: #F7F9F7; color: var(--text); font-family: var(--font-body); line-height: 1.5; }
 a { color: inherit; text-decoration: none; }
 
 /* Nav */
-.nav { background: var(--surface); border-bottom: 1px solid var(--border-light); position: sticky; top: 0; z-index: 50; }
+.nav { background: rgba(247,249,247,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-light); position: sticky; top: 0; z-index: 50; }
 .nav-inner { max-width: 1200px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
 .brand { display: flex; align-items: center; gap: 9px; }
 .logo-hex { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -50,11 +50,8 @@ a { color: inherit; text-decoration: none; }
 
 /* Hero */
 .hero {
-  background: var(--surface);
-  background-image:
-    linear-gradient(rgba(0,210,138,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,210,138,0.04) 1px, transparent 1px);
-  background-size: 40px 40px;
+  background: #F7F9F7;
+  background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,210,138,0.15) 0%, transparent 70%);
   text-align: center;
   padding: 80px 24px 0;
 }
