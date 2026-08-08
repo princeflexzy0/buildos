@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — BuildOS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="legal.css">
+</head>
+<body>
+<header class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand">
+      <div class="logo-hex"><svg viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="#06120D"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.5"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.5"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.25"/></svg></div>
+      <div class="brand-text"><span class="brand-name">BuildOS</span><span class="brand-sub">ONCHAIN AGENTS</span></div>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="terms.html">Terms</a>
+      <a href="privacy.html">Privacy</a>
+    </nav>
+  </div>
+</header>
+
+<main class="legal-page">
+  <span class="section-tag">Last updated August 2026</span>
+  <h1>Privacy Policy</h1>
+
+  <p class="legal-lede">BuildOS is non-custodial. In plain terms: <strong>we never see, request, or store your private keys or seed phrase — ever, under any circumstance.</strong></p>
+
+  <h2>How wallet connections work</h2>
+  <p>When you connect MetaMask or OKX Wallet, the browser extension shares only your <strong>public wallet address</strong> with BuildOS. When you sign a transaction, the signing happens entirely inside your wallet extension — the private key never leaves it and never touches our frontend or servers. We only ever receive the signed transaction hash after you've approved it.</p>
+
+  <h2>What we do store</h2>
+  <ul class="legal-list">
+    <li>Your public wallet address (already public on the blockchain)</li>
+    <li>The natural-language description you type in and its compiled agent config</li>
+    <li>Transaction hashes and agent status, once committed on X Layer testnet</li>
+  </ul>
+  <p>All of the above is inherently public, pseudonymous blockchain data. None of it identifies you personally unless you choose to make that link yourself.</p>
+
+  <h2>What we never do</h2>
+  <ul class="legal-list">
+    <li>Ask for or accept a pasted private key or seed phrase, anywhere in the product</li>
+    <li>Sign transactions on your behalf without an explicit wallet approval popup</li>
+    <li>Sell, share, or monetize wallet or usage data with third parties</li>
+    <li>Track you across other sites</li>
+  </ul>
+
+  <h2>Demo Mode</h2>
+  <p>Demo Mode lets judges and visitors explore BuildOS using an account we control, pre-seeded with real testnet agents, so you don't need to install or fund a wallet to see it work. See our <a href="demo-disclosure.html">Demo Mode disclosure</a> for details.</p>
+
+  <h2>Contact</h2>
+  <p>Questions about this policy — reach out via the <a href="https://github.com/princeflexzy0/buildos" target="_blank">GitHub repo</a>.</p>
+</main>
+
+<footer class="footer">
+  <span>BuildOS — built for the X Layer AI Season Hackathon · <a href="https://github.com/princeflexzy0/buildos" target="_blank">GitHub</a></span>
+</footer>
+</body>
+</html>

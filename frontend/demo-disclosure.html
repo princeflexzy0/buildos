@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About Demo Mode — BuildOS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="legal.css">
+</head>
+<body>
+<header class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand">
+      <div class="logo-hex"><svg viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="#06120D"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.5"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.5"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.25"/></svg></div>
+      <div class="brand-text"><span class="brand-name">BuildOS</span><span class="brand-sub">ONCHAIN AGENTS</span></div>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="terms.html">Terms</a>
+      <a href="privacy.html">Privacy</a>
+    </nav>
+  </div>
+</header>
+
+<main class="legal-page">
+  <span class="section-tag">For Judges & Visitors</span>
+  <h1>What "Demo Mode" actually is</h1>
+  <p class="legal-lede">No smoke and mirrors — here's exactly what happens when you click "Try Live Demo."</p>
+
+  <h2>What it is</h2>
+  <p>Demo Mode signs you in as a wallet address we own and control, pre-seeded with agents already compiled and committed on X Layer testnet. It lets you see the full product — compiler, Signal Monitor, live agent cards, real transaction hashes — without installing a browser extension or holding testnet OKB.</p>
+
+  <h2>What's real</h2>
+  <ul class="legal-list">
+    <li>Every transaction hash shown is a real X Layer testnet transaction — click through to the explorer and verify it yourself</li>
+    <li>The compiler runs the same LLM pipeline as the connected-wallet flow</li>
+    <li>Agent configs and their onchain hashes are genuine, not mocked data</li>
+  </ul>
+
+  <h2>What's different from Connect Wallet</h2>
+  <p>In Demo Mode, when you "commit" an agent onchain, the transaction is signed by our demo signer (funded with testnet OKB only) rather than popping up your own wallet extension. This is the only difference — it exists purely so you don't need to set up a wallet just to evaluate the product. Switch to <strong>Connect Wallet</strong> at any point to run the identical flow signing with your own MetaMask or OKX Wallet.</p>
+
+  <p>Questions? See our <a href="privacy.html">Privacy Policy</a> or the <a href="https://github.com/princeflexzy0/buildos" target="_blank">source code</a>.</p>
+</main>
+
+<footer class="footer">
+  <span>BuildOS — built for the X Layer AI Season Hackathon · <a href="https://github.com/princeflexzy0/buildos" target="_blank">GitHub</a></span>
+</footer>
+</body>
+</html>

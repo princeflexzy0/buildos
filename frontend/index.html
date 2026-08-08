@@ -8,8 +8,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="legal.css">
 </head>
 <body>
+<div id="demoModeBanner" class="demo-banner">
+  <span class="pulse"></span> Viewing demo account — real agents, live on X Layer testnet.
+  <button onclick="exitDemoMode()">Exit demo</button>
+</div>
 
 <header class="nav">
   <div class="nav-inner">
@@ -30,7 +35,7 @@
     </nav>
     <div class="nav-right">
       <span id="walletPill" class="wallet-pill">Not connected</span>
-      <button id="walletBtn" class="btn btn-dark btn-pill" onclick="connectWallet()">Connect Wallet</button>
+      <button id="walletBtn" class="btn btn-dark btn-pill" onclick="openWalletModal()">Connect Wallet</button>
     </div>
   </div>
 </header>
@@ -46,7 +51,8 @@
   <h1>Describe <em>Smarter.</em><br>Ship Onchain.</h1>
   <p class="sub">BuildOS compiles plain English into production-ready smart contracts on X Layer — no code required. Connect your wallet and deploy a live agent in under 60 seconds.</p>
   <div class="cta-row">
-    <button class="btn btn-dark btn-lg" onclick="connectWallet()">Connect OKX Wallet</button>
+    <button class="btn btn-dark btn-lg" onclick="enterDemoMode()">Try Live Demo — No Wallet Needed</button>
+    <button class="btn btn-outline btn-lg" onclick="openWalletModal()">Connect Wallet</button>
     <a href="#templates" class="btn btn-outline btn-lg">Browse Templates</a>
     <a href="#console" class="btn btn-green-soft btn-lg">Open Console</a>
   </div>
@@ -199,12 +205,23 @@
 
 <footer class="footer">
   <span>BuildOS — built for the X Layer AI Season Hackathon · <a href="https://github.com/princeflexzy0/buildos" target="_blank">GitHub</a></span>
-  <span>Powered by X Layer · OKX Wallet · OpenAI</span>
+  <span><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="demo-disclosure.html">About Demo Mode</a> · Powered by X Layer · OKX Wallet · MetaMask</span>
 </footer>
 
 <script src="config.js"></script>
 <script src="wallet.js"></script>
 <script src="app.js"></script>
 <script src="demo.js"></script>
+
+<div id="walletModal" class="wallet-modal">
+  <div class="wallet-modal-box">
+    <h3>Connect a wallet</h3>
+    <p class="modal-sub">Choose which wallet to use on X Layer testnet.</p>
+    <div class="wallet-option" onclick="connectWith('okx')"><span class="wallet-emoji">⬛</span> OKX Wallet</div>
+    <div class="wallet-option" onclick="connectWith('metamask')"><span class="wallet-emoji">🦊</span> MetaMask</div>
+    <div class="wallet-modal-close" onclick="closeWalletModal()">Cancel</div>
+  </div>
+</div>
+<script src="demo-mode.js"></script>
 </body>
 </html>
