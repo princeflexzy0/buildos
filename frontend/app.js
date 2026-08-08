@@ -142,6 +142,7 @@ function renderCompiledConfigForReview() {
         <label>Escrow Lock</label>
         <span class="amount-edit-wrap">
           <select id="escrowDurationSelect">
+            <option value="0.00139">2 minutes (demo)</option>
             <option value="7">7 days</option>
             <option value="14" selected>14 days</option>
             <option value="30">30 days</option>
