@@ -6,10 +6,12 @@ const {
   checkin,
   simulateSignal,
   tickAll,
+  commitOnchain,
+  commitVerdictOnchain,
 } = require("./index");
 
 const PORT = process.env.MONITOR_PORT || 3002;
-const TICK_INTERVAL_MS = 10000; // re-evaluate all agents every 10s
+const TICK_INTERVAL_MS = 10000;
 
 function setCors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -40,14 +42,11 @@ const server = http.createServer(async (req, res) => {
   }
   const parts = req.url.split("?")[0].split("/").filter(Boolean);
 
-  // GET /health
   if (req.method === "GET" && parts[0] === "health") {
     res.writeHead(200, { "Content-Type": "application/json" });
     return res.end(JSON.stringify({ status: "ok", service: "BuildOS Signal Monitor" }));
   }
 
-  // GET /status  -> all agents
-  // GET /status/:hash -> one agent
   if (req.method === "GET" && parts[0] === "status") {
     if (parts[1]) {
       const agent = getAgent(parts[1]);
@@ -62,7 +61,6 @@ const server = http.createServer(async (req, res) => {
     return res.end(JSON.stringify({ success: true, agents: listAgents() }));
   }
 
-  // POST /register  { config }
   if (req.method === "POST" && parts[0] === "register") {
     let body;
     try {
@@ -81,7 +79,6 @@ const server = http.createServer(async (req, res) => {
     return res.end(JSON.stringify({ success: true, agent: state }));
   }
 
-  // POST /checkin/:hash
   if (req.method === "POST" && parts[0] === "checkin" && parts[1]) {
     const state = checkin(parts[1]);
     if (!state) {
@@ -92,7 +89,6 @@ const server = http.createServer(async (req, res) => {
     return res.end(JSON.stringify({ success: true, agent: state }));
   }
 
-  // POST /simulate/:hash  { signalType }
   if (req.method === "POST" && parts[0] === "simulate" && parts[1]) {
     let body;
     try {
@@ -112,6 +108,30 @@ const server = http.createServer(async (req, res) => {
     }
     res.writeHead(200, { "Content-Type": "application/json" });
     return res.end(JSON.stringify({ success: true, agent: state }));
+  }
+
+  // POST /commit-onchain/:hash - creates the real AgentFactory.createAgent() tx
+  if (req.method === "POST" && parts[0] === "commit-onchain" && parts[1]) {
+    try {
+      const state = await commitOnchain(parts[1]);
+      res.writeHead(200, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ success: true, agent: state }));
+    } catch (err) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
+  // POST /commit-verdict/:hash - pushes current signal/consensus state onchain
+  if (req.method === "POST" && parts[0] === "commit-verdict" && parts[1]) {
+    try {
+      const state = await commitVerdictOnchain(parts[1]);
+      res.writeHead(200, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ success: true, agent: state }));
+    } catch (err) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: err.message }));
+    }
   }
 
   res.writeHead(404, { "Content-Type": "application/json" });

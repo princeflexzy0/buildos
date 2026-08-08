@@ -1,5 +1,6 @@
 // BuildOS Signal Monitor - core signal checking + consensus logic
 const crypto = require("crypto");
+const chain = require("./chain");
 
 // In-memory registry: configHash -> { config, state }
 const registry = new Map();
@@ -26,6 +27,15 @@ function registerAgent(config) {
     consensusMet: false,
     executedAt: null,
     config,
+    // onchain fields - populated by commitOnchain()
+    onchain: {
+      committed: false,
+      agentId: null,
+      agentContractAddress: null,
+      createTxHash: null,
+      verdictTxHash: null,
+      registerTxHash: null,
+    },
   };
   registry.set(hash, state);
   return state;
@@ -43,7 +53,6 @@ function checkin(hash) {
   const state = registry.get(hash);
   if (!state) return null;
   state.lastCheckin = nowSec();
-  // checking in resets inactivity/checkin_miss signals
   state.signals.forEach((s) => {
     if (s.signalType === "inactivity_check" || s.signalType === "checkin_miss") {
       s.fired = false;
@@ -65,8 +74,6 @@ function simulateSignal(hash, signalType) {
   return state;
 }
 
-// Auto re-evaluation: checks time-based triggers (inactivity, checkin_miss)
-// against real elapsed time since lastCheckin.
 function autoEvaluate(state) {
   const elapsed = nowSec() - state.lastCheckin;
   state.triggers.forEach((t) => {
@@ -117,6 +124,42 @@ function tickAll() {
   });
 }
 
+// Explicitly pushes an agent onchain via AgentFactory.createAgent()
+async function commitOnchain(hash) {
+  const state = registry.get(hash);
+  if (!state) throw new Error("agent not found");
+  if (state.onchain.committed) throw new Error("agent already committed onchain");
+
+  const result = await chain.createOnchainAgent(state.config);
+  state.onchain.committed = true;
+  state.onchain.agentId = result.agentId;
+  state.onchain.agentContractAddress = result.agentContractAddress;
+  state.onchain.createTxHash = result.txHash;
+  return state;
+}
+
+// Pushes the current signal/consensus state onchain as a real signal + verdict
+async function commitVerdictOnchain(hash) {
+  const state = registry.get(hash);
+  if (!state) throw new Error("agent not found");
+  if (!state.onchain.committed) throw new Error("agent not committed onchain yet - call commitOnchain first");
+
+  const firedSignal = state.signals.find((s) => s.fired) || state.signals[0];
+  const result = await chain.submitVerdict(state.onchain.agentContractAddress, {
+    signalType: firedSignal ? firedSignal.signalType : "unknown",
+    signalHash: "0x" + crypto.createHash("sha256").update(JSON.stringify(firedSignal || {})).digest("hex").slice(0, 16),
+    positive: state.consensusMet,
+    triggered: state.consensusMet,
+    reasoningHash: "0x" + crypto.createHash("sha256").update(state.consensusDescription || "verdict").digest("hex").slice(0, 16),
+    signalsInFavor: state.signals.filter((s) => s.fired).length,
+    signalsTotal: state.signals.length,
+  });
+
+  state.onchain.registerTxHash = result.registerTxHash;
+  state.onchain.verdictTxHash = result.verdictTxHash;
+  return state;
+}
+
 module.exports = {
   registerAgent,
   getAgent,
@@ -126,5 +169,7 @@ module.exports = {
   autoEvaluate,
   evaluateConsensus,
   tickAll,
+  commitOnchain,
+  commitVerdictOnchain,
   registry,
 };
