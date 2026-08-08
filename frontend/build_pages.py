@@ -26,11 +26,11 @@ def build(path, title, active, body, extra_scripts="", is_home=False):
 {body}
 </main>
 {FOOTER}
-<script src="config.js?v=1786196227"></script>
-<script src="wallet.js?v=1786196227"></script>
-<script src="app.js?v=1786196227"></script>
-<script src="demo.js?v=1786196227"></script>
-<script src="demo-mode.js?v=1786196227"></script>
+<script src="config.js?v=1786196629"></script>
+<script src="wallet.js?v=1786196629"></script>
+<script src="app.js?v=1786196629"></script>
+<script src="demo.js?v=1786196629"></script>
+<script src="demo-mode.js?v=1786196629"></script>
 {extra_scripts}
 </body>
 </html>'''
@@ -239,7 +239,10 @@ console_body = '''
     <div class="panel">
       <div class="panel-head"><span class="panel-label">Compiler</span></div>
       <textarea id="compilerInput" placeholder="e.g. release my savings to my daughter if I don't check in for 6 months"></textarea>
-      <button id="compileBtn" class="btn btn-green btn-block">Compile</button>
+      <div class="compiler-btn-row">
+        <button id="compileBtn" class="btn btn-green btn-block">Compile</button>
+        <button id="newCompileBtn" class="btn btn-outline" type="button" title="Clear and start a new compile">New</button>
+      </div>
       <div id="compilerOutput" class="code-block">// compiled config will appear here</div>
       <div id="gasEstimateBox" class="gas-estimate" style="display:none"></div>
       <div class="action-row">

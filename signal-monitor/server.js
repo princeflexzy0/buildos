@@ -8,6 +8,7 @@ const {
   tickAll,
   commitOnchain,
   commitVerdictOnchain,
+  deleteAgent,
 } = require("./index");
 const chain = require("./chain");
 
@@ -16,7 +17,7 @@ const TICK_INTERVAL_MS = 10000;
 
 function setCors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 }
 
@@ -81,6 +82,16 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(500, { "Content-Type": "application/json" });
       return res.end(JSON.stringify({ error: err.message }));
     }
+  }
+
+  if (req.method === "DELETE" && parts[0] === "status" && parts[1]) {
+    const existed = deleteAgent(parts[1]);
+    if (!existed) {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "agent not found" }));
+    }
+    res.writeHead(200, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({ success: true }));
   }
 
   if (req.method === "POST" && parts[0] === "register") {

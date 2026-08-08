@@ -193,6 +193,15 @@ async function commitVerdictOnchain(hash) {
   return state;
 }
 
+function deleteAgent(hash) {
+  const existed = registry.has(hash);
+  if (existed) {
+    registry.delete(hash);
+    saveToDisk();
+  }
+  return existed;
+}
+
 module.exports = {
   registerAgent,
   getAgent,
@@ -204,5 +213,6 @@ module.exports = {
   tickAll,
   commitOnchain,
   commitVerdictOnchain,
+  deleteAgent,
   registry,
 };

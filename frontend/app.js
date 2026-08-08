@@ -176,6 +176,19 @@ async function refreshAgentBalance(configHash) {
 }
 
 // ─── Compile ──────────────────────────────────────────────────────────────────
+function resetCompiler() {
+  compilerInput.value = "";
+  compilerOutput.textContent = "// compiled config will appear here";
+  rawConfig = null;
+  currentConfig = null;
+  registerBtn.disabled = true;
+  commitBtn.disabled = true;
+  const gasBox = document.getElementById("gasEstimateBox");
+  if (gasBox) gasBox.style.display = "none";
+  compilerInput.focus();
+}
+document.getElementById("newCompileBtn")?.addEventListener("click", resetCompiler);
+
 compileBtn?.addEventListener("click", async () => {
   console.log("[DEBUG] compileBtn clicked. isDemoMode =", isDemoMode, "connectedAddress =", connectedAddress);
   if (!isDemoMode && !connectedAddress) {
@@ -332,9 +345,11 @@ function renderAgent(agent) {
         <span class="badge ${agent.consensusMet ? "active" : ""}">${agent.consensusMet ? "✓ consensus met" : "watching"}</span>
       </div>
       <div class="agent-hash">${agent.configHash}</div>
+      ${committed ? `<div class="agent-balance" id="balance-${agent.configHash}">balance: loading…</div>` : ""}
       <div class="agent-actions">
         <button class="btn-small" onclick="doCheckin('${agent.configHash}')">Check In</button>
         ${!committed ? `<button class="btn-small btn-primary" onclick="doCommit('${agent.configHash}')">Commit Onchain</button>` : ""}
+        <button class="btn-small btn-danger" onclick="doDelete('${agent.configHash}')">Delete</button>
       </div>
       <div class="agent-links">${links.join("")}</div>
     </div>`;
@@ -383,11 +398,46 @@ async function refreshAgents() {
       agentList.innerHTML = `<p class="empty-state">No agents yet. Compile one on the left to get started.</p>`;
       return;
     }
-    agentList.innerHTML = data.agents.slice().reverse().map(renderAgent).join("");
+    const agents = data.agents.slice().reverse();
+    console.log("[DEBUG] refreshAgents polling tick. agent count:", agents.length, "at", new Date().toLocaleTimeString());
+    agentList.innerHTML = agents.map(renderAgent).join("");
+    // Fetch balance for each committed agent's card individually
+    agents.filter(a => a.onchain?.committed).forEach(a => refreshCardBalance(a.configHash));
   } catch {
     agentList.innerHTML = `<p class="empty-state">Could not reach Signal Monitor.</p>`;
   }
 }
+
+async function refreshCardBalance(hash) {
+  const el = document.getElementById(`balance-${hash}`);
+  if (!el) return;
+  try {
+    const res = await fetch(`${MONITOR_URL}/status/${hash}/balance`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.success && data.committed) {
+      const eth = (Number(data.balance) / 1e18).toFixed(4);
+      el.textContent = `balance: ${eth} OKB`;
+    } else {
+      el.textContent = "balance: —";
+    }
+  } catch {
+    el.textContent = "balance: —";
+  }
+}
+
+async function doDelete(hash) {
+  if (!confirm("Delete this agent? This only removes it from the Signal Monitor list — it does not affect anything already committed onchain.")) return;
+  try {
+    const res = await fetch(`${MONITOR_URL}/status/${hash}`, { method: "DELETE" });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || "delete failed");
+    await refreshAgents();
+  } catch (err) {
+    alert(`Delete failed: ${err.message}`);
+  }
+}
+window.doDelete = doDelete;
 
 // ─── Wallet disconnect — lock UI but keep compiled config ─────────────────────
 // Called from wallet.js / demo-mode.js when wallet disconnects
