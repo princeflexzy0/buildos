@@ -356,3 +356,28 @@ textarea:focus { outline: none; border-color: var(--accent); }
 @media (max-width: 700px) { .demo-standalone .timer-display { font-size: 72px; } .demo-standalone .demo-timer-box { padding: 36px 24px; } }
 .footer-badge-primary { font-weight: 700; }
 .footer-secondary-note { font-family: var(--font-mono); font-size: 10px; color: #999; margin-top: 6px; display: block; }
+
+/* Demo mode toggle */
+.demo-toggle-wrap { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.demo-toggle-label { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); }
+.demo-toggle-wrap input { display: none; }
+.demo-toggle-slider {
+  width: 34px; height: 18px; background: var(--border); border-radius: 999px; position: relative;
+  transition: background 0.2s ease;
+}
+.demo-toggle-slider::before {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px;
+  background: #fff; border-radius: 50%; transition: transform 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.demo-toggle-wrap input:checked + .demo-toggle-slider { background: var(--accent); }
+.demo-toggle-wrap input:checked + .demo-toggle-slider::before { transform: translateX(16px); }
+.config-review { text-align: left; font-family: var(--font-mono); font-size: 12px; }
+.config-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-light); gap: 12px; }
+.config-row label { color: #999; text-transform: uppercase; font-size: 10px; letter-spacing: 0.06em; flex-shrink: 0; }
+.config-row input { flex: 1; background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; font-family: var(--font-mono); font-size: 11px; }
+.config-row-warn input { border-color: #E8B23A; }
+.config-warning { background: #FFF8E6; border: 1px solid #F5D98B; color: #92620A; border-radius: 8px; padding: 8px 10px; margin-top: 10px; font-size: 11px; line-height: 1.5; }
+.gas-estimate { font-family: var(--font-mono); font-size: 11px; border-radius: 8px; padding: 8px 12px; margin-top: 10px; }
+.gas-estimate-loading { background: var(--surface-2); color: var(--text-dim); }
+.gas-estimate-ready { background: var(--accent-bg); border: 1px solid var(--accent-border); color: var(--accent-text); }
+.gas-estimate-error { background: #FFF3F2; border: 1px solid #F5C2BE; color: #B3261E; }

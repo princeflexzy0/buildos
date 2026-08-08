@@ -29,6 +29,11 @@
       <a href="https://github.com/princeflexzy0/buildos" target="_blank">GitHub</a>
     </nav>
     <div class="nav-right">
+      <label class="demo-toggle-wrap" title="Preview with a pre-seeded demo account">
+        <span class="demo-toggle-label">Demo</span>
+        <input type="checkbox" id="demoToggle" onchange="toggleDemoMode(this.checked)">
+        <span class="demo-toggle-slider"></span>
+      </label>
       <span id="walletPill" class="wallet-pill">Not connected</span>
       <button id="walletBtn" class="btn btn-dark btn-pill" onclick="openWalletModal()">Connect Wallet</button>
     </div>
@@ -51,6 +56,7 @@
       <textarea id="compilerInput" placeholder="e.g. release my savings to my daughter if I don't check in for 6 months"></textarea>
       <button id="compileBtn" class="btn btn-green btn-block">Compile</button>
       <pre id="compilerOutput" class="code-block">// compiled config will appear here</pre>
+      <div id="gasEstimateBox" class="gas-estimate" style="display:none"></div>
       <div class="action-row">
         <button id="registerBtn" class="btn btn-secondary" disabled>Register with Monitor</button>
         <button id="commitBtn" class="btn btn-secondary" disabled>Commit Onchain</button>

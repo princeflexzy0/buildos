@@ -16,6 +16,11 @@
       <a href="https://github.com/princeflexzy0/buildos" target="_blank">GitHub</a>
     </nav>
     <div class="nav-right">
+      <label class="demo-toggle-wrap" title="Preview with a pre-seeded demo account">
+        <span class="demo-toggle-label">Demo</span>
+        <input type="checkbox" id="demoToggle" onchange="toggleDemoMode(this.checked)">
+        <span class="demo-toggle-slider"></span>
+      </label>
       <span id="walletPill" class="wallet-pill">Not connected</span>
       <button id="walletBtn" class="btn btn-dark btn-pill" onclick="openWalletModal()">Connect Wallet</button>
     </div>

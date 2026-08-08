@@ -178,3 +178,83 @@ function requireCommitConfirmation(compiledConfig) {
   };
   commitBtn.disabled = false;
 }
+
+// After the LLM compiles a config, force explicit human review/completion
+// of any field it couldn't resolve on its own — especially recipient address.
+// This function assumes compilerOutput now renders EDITABLE fields, not just JSON text.
+function renderCompiledConfigForReview(config) {
+  const box = document.getElementById("compilerOutput");
+  const needsAddress = !config.recipient || !/^0x[a-fA-F0-9]{40}$/.test(config.recipient);
+  const knownTokens = ["OKB", "USDT", "USDC"]; // whatever your contract actually supports
+  const tokenSupported = knownTokens.includes((config.token || "").toUpperCase());
+
+  box.innerHTML = `
+    <div class="config-review">
+      <div class="config-row"><label>Action</label><span>${config.action || "—"}</span></div>
+      <div class="config-row"><label>Amount</label><span>${config.amount || "—"} ${config.token || ""}</span></div>
+      <div class="config-row ${needsAddress ? "config-row-warn" : ""}">
+        <label>Recipient</label>
+        <input type="text" id="recipientInput" placeholder="0x… — paste the real wallet address"
+               value="${needsAddress ? "" : config.recipient}">
+      </div>
+      <div class="config-row"><label>Trigger</label><span>${config.trigger || "—"}</span></div>
+      ${!tokenSupported ? `<div class="config-warning">⚠️ "${config.token}" isn't a supported token on X Layer for this agent. Supported: ${knownTokens.join(", ")}.</div>` : ""}
+      ${needsAddress ? `<div class="config-warning">⚠️ We can't resolve "${config.recipientRaw || "a name or relationship"}" to a wallet address automatically. Paste the actual address above.</div>` : ""}
+    </div>`;
+
+  document.getElementById("registerBtn").disabled = false;
+  // Commit stays disabled until address + supported token both check out
+  document.getElementById("commitBtn").disabled = needsAddress || !tokenSupported;
+
+  document.getElementById("recipientInput")?.addEventListener("input", (e) => {
+    const valid = /^0x[a-fA-F0-9]{40}$/.test(e.target.value.trim());
+    document.getElementById("commitBtn").disabled = !valid || !tokenSupported;
+    config.recipient = e.target.value.trim();
+  });
+
+  return config;
+}
+
+// Estimates gas before committing, so the user sees real cost before signing.
+// Requires an ethers provider — reuses whatever window.activeProvider wallet.js set,
+// or falls back to a plain JSON-RPC provider for read-only estimation in Demo Mode.
+async function estimateAndShowGas(txPayload) {
+  const gasBox = document.getElementById("gasEstimateBox");
+  gasBox.style.display = "block";
+  gasBox.className = "gas-estimate gas-estimate-loading";
+  gasBox.textContent = "Estimating gas…";
+
+  try {
+    const rpc = "https://testrpc.xlayer.tech";
+    const res = await fetch(rpc, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0", id: 1, method: "eth_estimateGas",
+        params: [{ to: txPayload.to, value: txPayload.value || "0x0", data: txPayload.data || "0x" }],
+      }),
+    });
+    const { result: gasHex, error } = await res.json();
+    if (error) throw new Error(error.message);
+
+    const gasPriceRes = await fetch(rpc, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 2, method: "eth_gasPrice", params: [] }),
+    });
+    const { result: gasPriceHex } = await gasPriceRes.json();
+
+    const gasUnits = parseInt(gasHex, 16);
+    const gasPriceWei = parseInt(gasPriceHex, 16);
+    const feeOKB = (gasUnits * gasPriceWei) / 1e18;
+
+    gasBox.className = "gas-estimate gas-estimate-ready";
+    gasBox.innerHTML = `Estimated network fee: <strong>${feeOKB.toFixed(6)} OKB</strong> (${gasUnits.toLocaleString()} gas)`;
+    return { gasUnits, gasPriceWei, feeOKB };
+  } catch (err) {
+    console.error("gas estimate failed:", err);
+    gasBox.className = "gas-estimate gas-estimate-error";
+    gasBox.textContent = "Couldn't estimate gas — network may be unreachable.";
+    return null;
+  }
+}
