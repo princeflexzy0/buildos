@@ -1,0 +1,98 @@
+const https = require("https");
+const crypto = require("crypto");
+require("dotenv").config();
+
+const COMPILER_SYSTEM_PROMPT = `You are the BuildOS compiler. Convert natural language descriptions of autonomous AI agents into structured JSON configs.
+
+AGENT TYPES: Chronicle (digital-will), Sentinel (delivery/milestone release), Guardian (parametric payout), Warden (dead-drop document), Custom.
+
+OUTPUT FORMAT - respond with ONLY valid JSON, no markdown, no explanation:
+{
+  "agentType": "Chronicle|Sentinel|Guardian|Warden|Custom",
+  "version": "1.0.0",
+  "label": "short human-readable name",
+  "description": "one sentence summary",
+  "triggers": [{"type": "inactivity|oracle_feed|api_poll|checkin_miss|threshold_cross|custom","description": "what this watches","thresholdSeconds": 0,"thresholdValue": null,"source": "data source"}],
+  "signals": [{"signalType": "inactivity_check|public_record|oracle_feed|api_poll|custom","source": "where from","description": "what confirmed"}],
+  "consensusRule": "all|majority|any|2_of_2|2_of_3|custom",
+  "consensusDescription": "plain English of when agent fires",
+  "action": {"type": "release_funds|reveal_message|transfer_nft|release_document|custom","description": "what happens","requiresBeneficiary": true,"requiresPayload": false},
+  "checkinRequired": true,
+  "checkinIntervalDays": 30,
+  "estimatedMaxSpendWei": "1000000000000000000",
+  "permissions": {"ownerCanCancel": true,"ownerCanUpdateBeneficiary": true,"ownerCanExtendTimeout": true},
+  "demoNotes": "what to show in a live demo"
+}
+
+RULES:
+- Always set ownerCanCancel: true
+- Infer thresholdSeconds from natural language (6 months=15552000, 90 days=7776000, 1 year=31536000)
+- estimatedMaxSpendWei: use "1000000000000000000" if amount not specified
+- ONLY output JSON. No preamble, no markdown fences.`;
+
+async function callClaude(prompt) {
+  const body = JSON.stringify({
+    model: "claude-sonnet-4-6",
+    max_tokens: 1024,
+    messages: [{ role: "user", content: prompt }],
+    system: COMPILER_SYSTEM_PROMPT,
+  });
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname: "api.anthropic.com",
+      path: "/v1/messages",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": process.env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      },
+    }, (res) => {
+      let data = "";
+      res.on("data", (chunk) => (data += chunk));
+      res.on("end", () => {
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.error) return reject(new Error(parsed.error.message));
+          resolve(parsed.content[0].text);
+        } catch (e) { reject(e); }
+      });
+    });
+    req.on("error", reject);
+    req.write(body);
+    req.end();
+  });
+}
+
+async function compile(description) {
+  if (!process.env.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY not set in .env");
+  console.log(`\n Compiling: "${description}"\n`);
+  const raw = await callClaude(description);
+  const cleaned = raw.replace(/^```json?\n?/i, "").replace(/\n?```$/i, "").trim();
+  let config;
+  try { config = JSON.parse(cleaned); }
+  catch (e) { throw new Error(`Claude returned invalid JSON:\n${cleaned}`); }
+  config.compiledAt = new Date().toISOString();
+  config.inputDescription = description;
+  config.configHash = "0x" + crypto.createHash("sha256").update(JSON.stringify(config)).digest("hex");
+  return config;
+}
+
+async function main() {
+  const args = process.argv.slice(2);
+  if (args.length > 0) {
+    const description = args.join(" ");
+    try {
+      const config = await compile(description);
+      console.log(JSON.stringify(config, null, 2));
+    } catch (err) {
+      console.error("Error:", err.message);
+      process.exit(1);
+    }
+  } else {
+    console.log('Usage: node compiler/index.js "describe your agent here"');
+  }
+}
+
+main();
+module.exports = { compile };
