@@ -39,7 +39,7 @@ def build(path, title, active, body, extra_scripts="", is_home=False):
 
 # ---------- HOMEPAGE (now built the same way as every other page) ----------
 home_body = open("_home_body.html").read()
-build("index.html", "BuildOS — Natural Language to Onchain Agents", None, home_body, is_home=True)
+build("index.html", "BuildOS Natural Language to Onchain Agents", None, home_body, is_home=True)
 
 # ---------- TEMPLATES PAGE ----------
 templates_body = '''
@@ -97,7 +97,7 @@ templates_body = '''
   </div>
 </section>
 '''
-build("templates.html", "Templates — BuildOS", "templates", templates_body)
+build("templates.html", "Templates BuildOS", "templates", templates_body)
 
 # ---------- HOW IT WORKS PAGE ----------
 how_body = '''
@@ -116,15 +116,15 @@ how_body = '''
       <span class="how-example-text">"Send 5 OKB to 0x1234...5678 if I don't check in for 30 days"</span>
     </div>
     <ul class="how-tips">
-      <li>💰 <strong>Amount:</strong> how much to send — e.g. 5 OKB, 100 USDT</li>
-      <li>📬 <strong>Recipient:</strong> destination wallet — always a full 0x... address</li>
-      <li>⏱ <strong>Trigger:</strong> when it fires — e.g. after 30 days of inactivity</li>
+      <li>💰 <strong>Amount:</strong> how much to send e.g. 5 OKB, 100 USDT</li>
+      <li>📬 <strong>Recipient:</strong> destination wallet always a full 0x... address</li>
+      <li>⏱ <strong>Trigger:</strong> when it fires e.g. after 30 days of inactivity</li>
     </ul>
   </div>
   <div class="pipeline-step-lg">
     <span class="step-num">02</span>
     <h3>Compile + review</h3>
-    <p>The compiler parses your sentence into a structured agent config. Review every field — amount, recipient, trigger — and edit before registering.</p>
+    <p>The compiler parses your sentence into a structured agent config. Review every field amount, recipient, trigger and edit before registering.</p>
     <div class="how-example">
       <span class="how-example-label">What you see</span>
       <span class="how-example-text">Agent · Action · Amount · Recipient input · Trigger · Gas estimate</span>
@@ -138,7 +138,7 @@ how_body = '''
   <div class="pipeline-step-lg">
     <span class="step-num">03</span>
     <h3>Register + monitor</h3>
-    <p>The Signal Monitor watches for your trigger 24/7 — check-ins, timers, and oracle signals evaluated against your agent rules.</p>
+    <p>The Signal Monitor watches for your trigger 24/7 check-ins, timers, and oracle signals evaluated against your agent rules.</p>
     <div class="how-example">
       <span class="how-example-label">Demo vs real wallet</span>
       <span class="how-example-text">Demo ON: demo account signs, no popup. Demo OFF: your wallet signs, you pay gas.</span>
@@ -146,13 +146,13 @@ how_body = '''
     <ul class="how-tips">
       <li>🟢 <strong>Demo Mode ON:</strong> try everything freely, no wallet needed</li>
       <li>🦊 <strong>Demo Mode OFF:</strong> connect MetaMask or OKX Wallet</li>
-      <li>📋 Agents saved and linked to your wallet — reconnecting restores history</li>
+      <li>📋 Agents saved and linked to your wallet reconnecting restores history</li>
     </ul>
   </div>
   <div class="pipeline-step-lg">
     <span class="step-num">04</span>
     <h3>Commit + execute</h3>
-    <p>Once your trigger fires, the agent executes on X Layer — verifiable and permanent on-chain.</p>
+    <p>Once your trigger fires, the agent executes on X Layer verifiable and permanent on-chain.</p>
     <div class="how-example">
       <span class="how-example-label">What happens</span>
       <span class="how-example-text">Verdict logged onchain → funds released to recipient → explorer link available</span>
@@ -160,7 +160,7 @@ how_body = '''
     <ul class="how-tips">
       <li>🔗 Every committed agent gets a contract address and tx you can verify</li>
       <li>✅ Hit Check In at any time to reset your inactivity timer</li>
-      <li>👛 In real mode, transfer comes from your wallet — BuildOS never holds funds</li>
+      <li>👛 In real mode, transfer comes from your wallet BuildOS never holds funds</li>
     </ul>
   </div>
 </section>
@@ -173,7 +173,7 @@ how_body = '''
     </div>
     <div class="faq-item">
       <h4>What address do I use as recipient?</h4>
-      <p>Any valid 0x... address — a family member, another wallet you own, anyone who should receive the funds when the trigger fires.</p>
+      <p>Any valid 0x... address a family member, another wallet you own, anyone who should receive the funds when the trigger fires.</p>
     </div>
     <div class="faq-item">
       <h4>What if I lose my compiled agent?</h4>
@@ -181,7 +181,7 @@ how_body = '''
     </div>
     <div class="faq-item">
       <h4>Does BuildOS hold my funds?</h4>
-      <p>In demo mode a demo account is used. In real mode your wallet signs every transaction — BuildOS never custodies your funds.</p>
+      <p>In demo mode a demo account is used. In real mode your wallet signs every transaction BuildOS never custodies your funds.</p>
     </div>
     <div class="faq-item">
       <h4>Can I have multiple agents?</h4>
@@ -199,14 +199,14 @@ how_body = '''
   <a href="demo.html" class="btn btn-outline btn-lg">Watch Live Demo</a>
 </section>
 '''
-build("how-it-works.html", "How it Works — BuildOS", "how-it-works", how_body)
+build("how-it-works.html", "How it Works BuildOS", "how-it-works", how_body)
 
 # ---------- DEMO PAGE ----------
 demo_body = '''
 <section class="page-hero">
   <span class="section-tag">🎯 Live Hackathon Demo</span>
   <h1>Watch it fire.<br>In real time.</h1>
-  <p class="page-sub">Compile a "dead man's switch" agent with a 30-second timeout. Don't check in. Watch the transaction fire automatically on X Layer — live, verifiable, permanent.</p>
+  <p class="page-sub">Compile a "dead man's switch" agent with a 30-second timeout. Don't check in. Watch the transaction fire automatically on X Layer live, verifiable, permanent.</p>
 </section>
 <section class="demo-standalone">
   <div class="demo-timer-box">
@@ -223,7 +223,7 @@ demo_body = '''
   </div>
 </section>
 '''
-build("demo.html", "Live Demo — BuildOS", "demo", demo_body)
+build("demo.html", "Live Demo BuildOS", "demo", demo_body)
 
 # ---------- CONSOLE PAGE ----------
 console_body = '''
@@ -259,7 +259,7 @@ console_body = '''
   </div>
 </section>
 '''
-build("console.html", "Console — BuildOS", "console", console_body,
+build("console.html", "Console BuildOS", "console", console_body,
       extra_scripts='<script>window.addEventListener("DOMContentLoaded",()=>{const t=new URLSearchParams(location.search).get("template");if(t&&typeof loadTemplate==="function")loadTemplate(t);});</script>')
 
-print("all pages built from identical nav/footer partials — index.html included")
+print("all pages built from identical nav/footer partials index.html included")
