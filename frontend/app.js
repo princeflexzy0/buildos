@@ -138,6 +138,21 @@ function renderCompiledConfigForReview() {
         <label>Escrow Balance</label>
         <span id="balanceValue">—</span>
       </div>
+      <div class="config-row" id="escrowRow" style="display:none">
+        <label>Escrow Lock</label>
+        <span class="amount-edit-wrap">
+          <select id="escrowDurationSelect">
+            <option value="7">7 days</option>
+            <option value="14" selected>14 days</option>
+            <option value="30">30 days</option>
+          </select>
+          <button class="btn-small btn-primary" id="depositEscrowBtn">Deposit to Escrow</button>
+        </span>
+      </div>
+      <div class="config-row" id="escrowStatusRow" style="display:none">
+        <label>Escrow Status</label>
+        <span id="escrowStatusValue">—</span>
+      </div>
       ${!addrValid ? `<div class="config-warning">⚠️ No wallet address found. Paste a valid 0x… address above to unlock Register and Commit.</div>` : ""}
     </div>`;
   document.getElementById("recipientInput")?.addEventListener("input", e => {
@@ -153,6 +168,7 @@ function renderCompiledConfigForReview() {
     currentConfig.token = e.target.value;
     if (addrValid) estimateAndShowGas(currentConfig);
   });
+  document.getElementById("depositEscrowBtn")?.addEventListener("click", handleEscrowDeposit);
   if (addrValid) estimateAndShowGas(currentConfig);
   updateCommitGate();
 }
@@ -262,6 +278,8 @@ registerBtn?.addEventListener("click", async () => {
     updateCommitGate();
     await refreshAgents();
     refreshAgentBalance(currentConfig.configHash);
+    const escrowRow = document.getElementById("escrowRow");
+    if (escrowRow) escrowRow.style.display = "flex";
   } catch (err) {
     alert(`Register failed: ${err.message}`);
   } finally {
@@ -475,3 +493,106 @@ window?.addEventListener("DOMContentLoaded", () => {
   if (template && typeof loadTemplate === "function") loadTemplate(template);
   if (params.get("connect") === "1" && typeof openWalletModal === "function") openWalletModal();
 });
+
+// ─── Escrow ───────────────────────────────────────────────────────────────────
+function getEscrowContract(signerOrProvider) {
+  return new ethers.Contract(
+    window.BUILDOS_CONFIG.ESCROW_ADDRESS,
+    window.BUILDOS_CONFIG.ESCROW_ABI,
+    signerOrProvider
+  );
+}
+
+function unlockAtFromDuration(days) {
+  return Math.floor(Date.now() / 1000) + days * 24 * 60 * 60;
+}
+
+function unlockAtFromDate(dateString) {
+  return Math.floor(new Date(dateString).getTime() / 1000);
+}
+
+async function depositNativeEscrow(signer, recipientAddress, amountEth, unlockAt) {
+  const escrow = getEscrowContract(signer);
+  const tx = await escrow.depositNative(recipientAddress, unlockAt, {
+    value: ethers.parseEther(amountEth.toString()),
+  });
+  const receipt = await tx.wait();
+  const event = receipt.logs
+    .map((log) => { try { return escrow.interface.parseLog(log); } catch { return null; } })
+    .find((e) => e && e.name === "Deposited");
+  return { txHash: tx.hash, depositId: event?.args?.id?.toString() };
+}
+
+async function withdrawEscrow(signer, depositId) {
+  const escrow = getEscrowContract(signer);
+  const tx = await escrow.withdraw(depositId);
+  await tx.wait();
+  return tx.hash;
+}
+
+async function getEscrowStatus(provider, depositId) {
+  const escrow = getEscrowContract(provider);
+  const d = await escrow.getDeposit(depositId);
+  const secondsLeft = await escrow.timeUntilUnlock(depositId);
+  return {
+    depositor: d.depositor,
+    recipient: d.recipient,
+    amount: ethers.formatEther(d.amount),
+    unlockAt: Number(d.unlockAt),
+    released: d.released,
+    refunded: d.refunded,
+    secondsUntilUnlock: Number(secondsLeft),
+  };
+}
+
+// ─── Escrow deposit handler (wired to depositEscrowBtn) ────────────────────────
+async function handleEscrowDeposit() {
+  const btn = document.getElementById("depositEscrowBtn");
+  const statusRow = document.getElementById("escrowStatusRow");
+  const statusVal = document.getElementById("escrowStatusValue");
+  const durationSelect = document.getElementById("escrowDurationSelect");
+
+  if (isDemoMode || !connectedAddress || !window.activeProvider) {
+    alert("Connect a real wallet to deposit into escrow (not available in Demo Mode).");
+    return;
+  }
+  if (!currentConfig?.configHash) {
+    alert("Register the agent first before depositing to escrow.");
+    return;
+  }
+  if (!isValidAddress(currentConfig.recipient)) {
+    alert("Enter a valid recipient wallet address first.");
+    return;
+  }
+  const amount = currentConfig.amount;
+  if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+    alert("Enter a valid amount before depositing to escrow.");
+    return;
+  }
+
+  const days = Number(durationSelect?.value || 14);
+  const unlockAt = unlockAtFromDuration(days);
+
+  btn.disabled = true;
+  btn.textContent = "Depositing…";
+  try {
+    const browserProvider = new ethers.BrowserProvider(window.activeProvider);
+    const signer = await browserProvider.getSigner();
+    const { txHash, depositId } = await depositNativeEscrow(
+      signer,
+      currentConfig.recipient,
+      amount,
+      unlockAt
+    );
+    currentConfig.escrowDepositId = depositId;
+    statusRow.style.display = "flex";
+    const unlockDate = new Date(unlockAt * 1000).toLocaleString();
+    statusVal.innerHTML = `Locked · id ${depositId} · unlocks ${unlockDate} · <a href="${window.BUILDOS_CONFIG.EXPLORER_TX_BASE}/${txHash}" target="_blank">tx ↗</a>`;
+    btn.textContent = "Deposited ✓";
+  } catch (err) {
+    statusRow.style.display = "flex";
+    statusVal.textContent = `Deposit failed: ${err.message}`;
+    btn.disabled = false;
+    btn.textContent = "Deposit to Escrow";
+  }
+}

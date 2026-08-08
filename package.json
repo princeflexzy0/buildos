@@ -6,7 +6,8 @@
     "compile": "node scripts/compile.js",
     "test": "node test/contracts.test.js",
     "deploy:testnet": "node scripts/deploy.js --network xlayer_testnet",
-    "deploy:mainnet": "node scripts/deploy.js --network xlayer_mainnet"
+    "deploy:mainnet": "node scripts/deploy.js --network xlayer_mainnet",
+    "deploy-escrow:testnet": "node scripts/deploy-escrow.js --network xlayer_testnet"
   },
   "devDependencies": {
     "dotenv": "^16.6.1",
