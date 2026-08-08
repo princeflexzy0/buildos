@@ -9,6 +9,7 @@ const {
   commitOnchain,
   commitVerdictOnchain,
 } = require("./index");
+const chain = require("./chain");
 
 const PORT = process.env.MONITOR_PORT || 3002;
 const TICK_INTERVAL_MS = 10000;
@@ -60,6 +61,26 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(200, { "Content-Type": "application/json" });
     const owner = new URL("http://x" + req.url).searchParams.get("owner");
     return res.end(JSON.stringify({ success: true, agents: listAgents(owner) }));
+  }
+
+  if (req.method === "GET" && parts[0] === "status" && parts[1] && parts[2] === "balance") {
+    const agent = getAgent(parts[1]);
+    if (!agent) {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "agent not found" }));
+    }
+    if (!agent.onchain.committed || !agent.onchain.agentId) {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ success: true, committed: false }));
+    }
+    try {
+      const balanceInfo = await chain.getAgentBalance(agent.onchain.agentId);
+      res.writeHead(200, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ success: true, committed: true, ...balanceInfo }));
+    } catch (err) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: err.message }));
+    }
   }
 
   if (req.method === "POST" && parts[0] === "register") {

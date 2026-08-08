@@ -94,10 +94,23 @@ async function submitVerdict(agentContractAddress, { signalType, signalHash, pos
   };
 }
 
+// Reads the onchain balance + status for an agent directly from AgentFactory
+// Returns { balance, status, maxSpendWei } (balance in wei as string)
+async function getAgentBalance(agentId) {
+  const factory = getFactoryContract();
+  const record = await factory.getAgent(agentId);
+  return {
+    balance: record.balance.toString(),
+    maxSpendWei: record.maxSpendWei.toString(),
+    status: record.status,
+  };
+}
+
 module.exports = {
   loadDeployment,
   getFactoryContract,
   getTriggerAgentContract,
   createOnchainAgent,
   submitVerdict,
+  getAgentBalance,
 };

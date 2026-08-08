@@ -157,16 +157,17 @@ function renderCompiledConfigForReview() {
   updateCommitGate();
 }
 
-async function refreshAgentBalance(agentId) {
+async function refreshAgentBalance(configHash) {
   const row = document.getElementById("balanceRow");
   const val = document.getElementById("balanceValue");
-  if (!row || !val || !agentId) return;
+  if (!row || !val || !configHash) return;
   try {
-    const res = await fetch(`${MONITOR_URL}/agent/${agentId}`);
+    const res = await fetch(`${MONITOR_URL}/status/${configHash}/balance`);
+    if (!res.ok) return;
     const data = await res.json();
-    if (data.success && data.agent) {
+    if (data.success && data.committed) {
       row.style.display = "flex";
-      const balanceEth = data.agent.balance ? (Number(data.agent.balance) / 1e18).toFixed(4) : "0.0000";
+      const balanceEth = (Number(data.balance) / 1e18).toFixed(4);
       val.textContent = `${balanceEth} ${currentConfig.token || "OKB"}`;
     }
   } catch (e) {
@@ -247,6 +248,7 @@ registerBtn?.addEventListener("click", async () => {
     if (data.agent?.configHash) currentConfig.configHash = data.agent.configHash;
     updateCommitGate();
     await refreshAgents();
+    refreshAgentBalance(currentConfig.configHash);
   } catch (err) {
     alert(`Register failed: ${err.message}`);
   } finally {

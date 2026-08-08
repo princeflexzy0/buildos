@@ -26,11 +26,11 @@ def build(path, title, active, body, extra_scripts="", is_home=False):
 {body}
 </main>
 {FOOTER}
-<script src="config.js?v=1786195929"></script>
-<script src="wallet.js?v=1786195929"></script>
-<script src="app.js?v=1786195929"></script>
-<script src="demo.js?v=1786195929"></script>
-<script src="demo-mode.js?v=1786195929"></script>
+<script src="config.js?v=1786196227"></script>
+<script src="wallet.js?v=1786196227"></script>
+<script src="app.js?v=1786196227"></script>
+<script src="demo.js?v=1786196227"></script>
+<script src="demo-mode.js?v=1786196227"></script>
 {extra_scripts}
 </body>
 </html>'''
