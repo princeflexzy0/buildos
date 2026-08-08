@@ -84,9 +84,10 @@ async function deploy() {
     throw new Error("Deployer wallet has 0 balance. Fund it from the X Layer faucet first.");
   }
 
-  console.log(`\nDeploying EscrowVault to ${NETWORK}...`);
+  const feeRecipient = process.env.FEE_RECIPIENT_ADDRESS || wallet.address;
+  console.log(`\nDeploying EscrowVault to ${NETWORK}... (fee recipient: ${feeRecipient})`);
   const EscrowFactory = new ethers.ContractFactory(abi, bytecode, wallet);
-  const escrowContract = await EscrowFactory.deploy();
+  const escrowContract = await EscrowFactory.deploy(feeRecipient);
   await escrowContract.waitForDeployment();
   const escrowAddress = await escrowContract.getAddress();
 

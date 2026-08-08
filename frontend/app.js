@@ -585,14 +585,61 @@ async function handleEscrowDeposit() {
       unlockAt
     );
     currentConfig.escrowDepositId = depositId;
+    currentConfig.escrowUnlockAt = unlockAt;
     statusRow.style.display = "flex";
     const unlockDate = new Date(unlockAt * 1000).toLocaleString();
-    statusVal.innerHTML = `Locked · id ${depositId} · unlocks ${unlockDate} · <a href="${window.BUILDOS_CONFIG.EXPLORER_TX_BASE}/${txHash}" target="_blank">tx ↗</a>`;
+    statusVal.innerHTML = `Locked · id ${depositId} · unlocks ${unlockDate} · <a href="${window.BUILDOS_CONFIG.EXPLORER_TX_BASE}/${txHash}" target="_blank">tx ↗</a> <button class="btn-small" id="withdrawEscrowBtn" disabled>Withdraw</button> <span id="withdrawCountdown"></span>`;
     btn.textContent = "Deposited ✓";
+    startWithdrawWatcher(depositId, unlockAt);
   } catch (err) {
     statusRow.style.display = "flex";
     statusVal.textContent = `Deposit failed: ${err.message}`;
     btn.disabled = false;
     btn.textContent = "Deposit to Escrow";
   }
+}
+
+// ─── Escrow withdraw watcher + handler ─────────────────────────────────────────
+function startWithdrawWatcher(depositId, unlockAt) {
+  const btn = document.getElementById("withdrawEscrowBtn");
+  const countdownEl = document.getElementById("withdrawCountdown");
+  if (!btn || !countdownEl) return;
+
+  function tick() {
+    const secondsLeft = unlockAt - Math.floor(Date.now() / 1000);
+    if (secondsLeft <= 0) {
+      btn.disabled = false;
+      countdownEl.textContent = "unlocked";
+      clearInterval(interval);
+      return;
+    }
+    const d = Math.floor(secondsLeft / 86400);
+    const h = Math.floor((secondsLeft % 86400) / 3600);
+    const m = Math.floor((secondsLeft % 3600) / 60);
+    const s = secondsLeft % 60;
+    countdownEl.textContent = `unlocks in ${d}d ${h}h ${m}m ${s}s`;
+  }
+
+  tick();
+  const interval = setInterval(tick, 1000);
+
+  btn.addEventListener("click", async () => {
+    if (isDemoMode || !connectedAddress || !window.activeProvider) {
+      alert("Connect a real wallet to withdraw from escrow.");
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = "Withdrawing…";
+    try {
+      const browserProvider = new ethers.BrowserProvider(window.activeProvider);
+      const signer = await browserProvider.getSigner();
+      const txHash = await withdrawEscrow(signer, depositId);
+      countdownEl.innerHTML = `withdrawn · <a href="${window.BUILDOS_CONFIG.EXPLORER_TX_BASE}/${txHash}" target="_blank">tx ↗</a>`;
+      btn.textContent = "Withdrawn ✓";
+    } catch (err) {
+      countdownEl.textContent = `withdraw failed: ${err.message}`;
+      btn.disabled = false;
+      btn.textContent = "Withdraw";
+    }
+  });
 }

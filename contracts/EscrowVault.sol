@@ -8,6 +8,8 @@ interface IERC20 {
 
 contract EscrowVault {
     address public constant NATIVE = address(0);
+    uint256 public constant FEE_BPS = 100; // 1% protocol fee, in basis points (100 = 1%)
+    address public immutable feeRecipient;
 
     struct Deposit {
         address depositor;
@@ -24,7 +26,7 @@ contract EscrowVault {
     uint256 public constant RECLAIM_GRACE_PERIOD = 90 days;
 
     event Deposited(uint256 indexed id, address indexed depositor, address indexed recipient, address token, uint256 amount, uint256 unlockAt);
-    event Withdrawn(uint256 indexed id, address indexed recipient, uint256 amount);
+    event Withdrawn(uint256 indexed id, address indexed recipient, uint256 payoutAmount, uint256 feeAmount);
     event Reclaimed(uint256 indexed id, address indexed depositor, uint256 amount);
 
     error InvalidUnlockTime();
@@ -38,6 +40,12 @@ contract EscrowVault {
     error NativeTransferFailed();
     error ERC20TransferFailed();
     error NoNativeWithErc20();
+    error InvalidFeeRecipient();
+
+    constructor(address _feeRecipient) {
+        if (_feeRecipient == address(0)) revert InvalidFeeRecipient();
+        feeRecipient = _feeRecipient;
+    }
 
     function depositNative(address recipient, uint256 unlockAt) external payable returns (uint256 id) {
         if (recipient == address(0)) revert InvalidRecipient();
@@ -72,9 +80,14 @@ contract EscrowVault {
         if (block.timestamp < d.unlockAt) revert NotYetUnlocked();
 
         d.released = true;
-        _payOut(d.token, msg.sender, d.amount);
 
-        emit Withdrawn(id, msg.sender, d.amount);
+        uint256 fee = (d.amount * FEE_BPS) / 10000;
+        uint256 payout = d.amount - fee;
+
+        if (fee > 0) _payOut(d.token, feeRecipient, fee);
+        _payOut(d.token, msg.sender, payout);
+
+        emit Withdrawn(id, msg.sender, payout, fee);
     }
 
     function reclaim(uint256 id) external {
