@@ -6,7 +6,7 @@
 <title>BuildOS — Natural Language to Onchain Agents</title>
 <link rel="icon" href="assets/logo-full.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -22,7 +22,10 @@
           <rect x="10" y="10" width="6" height="6" rx="1.5" fill="#06120D" opacity="0.25"/>
         </svg>
       </div>
-      <span class="logo-text">Build<span>OS</span></span>
+      <div class="brand-text">
+        <span class="brand-name">BuildOS</span>
+        <span class="brand-sub">ONCHAIN AGENTS</span>
+      </div>
     </div>
     <nav class="nav-links">
       <a href="#console">Console</a>
@@ -34,12 +37,23 @@
 </header>
 
 <section class="hero">
-  <span class="eyebrow"><span class="dot"></span> Natural language → live onchain agents</span>
-  <h1>Describe it.<br>Watch it <span class="accent">go onchain.</span></h1>
-  <p class="sub">BuildOS compiles plain English into a structured agent config, registers it with a live signal monitor, and deploys it as a real smart contract on X Layer — no code required.</p>
+  <span class="eyebrow"><span class="dot"></span> Open to Deploy | Natural Language → Onchain Agents</span>
+  <div class="hero-logo-circle">
+    <div class="logo-hex-lg">
+      <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="4" width="12" height="12" rx="3" fill="#06120D"/>
+        <rect x="20" y="4" width="12" height="12" rx="3" fill="#06120D" opacity="0.5"/>
+        <rect x="4" y="20" width="12" height="12" rx="3" fill="#06120D" opacity="0.5"/>
+        <rect x="20" y="20" width="12" height="12" rx="3" fill="#06120D" opacity="0.25"/>
+      </svg>
+    </div>
+  </div>
+  <h1>Describe <em>Smarter</em><br>Ship Onchain.</h1>
+  <p class="sub">AI Infrastructure Developer & Onchain Agent Compiler — turning plain English into production-ready smart contracts on X Layer that scale.</p>
   <div class="cta-row">
-    <a href="#console" class="btn btn-green btn-lg">Open the Console</a>
-    <a href="https://github.com/princeflexzy0/buildos" target="_blank" class="btn btn-outline btn-lg">View on GitHub</a>
+    <a href="#console" class="btn btn-dark btn-lg">Open the Console</a>
+    <a href="#pipeline" class="btn btn-outline btn-lg">How it Works</a>
+    <a href="https://github.com/princeflexzy0/buildos" target="_blank" class="btn btn-green-soft btn-lg">★ GitHub</a>
   </div>
 
   <div class="hero-mockup">
@@ -74,11 +88,12 @@
             <a href="#">create tx ↗</a>
           </div>
         </div>
+        <div class="live-strip">
+          <span class="pulse"></span>
+          <span class="status-text">All Systems Operational</span>
+        </div>
+        <div class="deploy-strip">Live deployments — X Layer Testnet · OKX Wallet · Signal Monitor</div>
       </div>
-    </div>
-    <div class="mockup-status">
-      <span class="pulse"></span>
-      <span class="status-text">compiler: ready · monitor: online · X Layer testnet</span>
     </div>
   </div>
 </section>
