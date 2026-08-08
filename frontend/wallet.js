@@ -92,3 +92,11 @@ function updateWalletUI(address) {
 }
 
 function getAddress() { return connectedAddress; }
+
+function toggleMobileMenu() {
+  const menu = document.getElementById("mobileMenu");
+  const btn = document.getElementById("hamburger");
+  if (!menu) return;
+  menu.classList.toggle("open");
+  btn.classList.toggle("open");
+}

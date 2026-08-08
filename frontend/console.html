@@ -12,7 +12,7 @@
 </head>
 <body>
 <div id="demoModeBanner" class="demo-banner">
-  <span class="pulse"></span> Viewing demo account real agents, live on X Layer testnet.
+  <span class="pulse"></span> Viewing demo account — real agents, live on X Layer testnet.
   <button onclick="exitDemoMode()">Exit demo</button>
 </div>
 <header class="nav">
@@ -36,6 +36,25 @@
       </label>
       <span id="walletPill" class="wallet-pill">Not connected</span>
       <button id="walletBtn" class="btn btn-dark btn-pill" onclick="openWalletModal()">Connect Wallet</button>
+    </div>
+    <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="templates.html">Templates</a>
+    <a href="console.html">Console</a>
+    <a href="how-it-works.html">How it Works</a>
+    <a href="demo.html">Live Demo</a>
+    <a href="https://github.com/princeflexzy0/buildos" target="_blank">GitHub</a>
+    <div class="mobile-menu-divider"></div>
+    <div class="mobile-menu-wallet">
+      <label class="demo-toggle-wrap">
+        <span class="demo-toggle-label">Demo Mode</span>
+        <input type="checkbox" id="demoToggleMobile" onchange="toggleDemoMode(this.checked)">
+        <span class="demo-toggle-slider"></span>
+      </label>
+      <button class="btn btn-dark" style="width:100%;margin-top:10px" onclick="openWalletModal();toggleMobileMenu()">Connect Wallet</button>
     </div>
   </div>
 </header>
@@ -85,24 +104,34 @@
   </div>
 </div>
 <footer class="footer">
-  <div class="footer-col">
-    <span class="footer-brand">BuildOS</span>
-    <span>Built for the X Layer AI Season Hackathon · 2026</span>
-    <span class="footer-copyright">© 2026 BuildOS. All rights reserved.</span>
-  </div>
-  <div class="footer-col footer-links">
-    <a href="privacy.html">Privacy</a>
-    <a href="terms.html">Terms</a>
-    <a href="demo-disclosure.html">About Demo Mode</a>
-    <a href="https://github.com/princeflexzy0/buildos" target="_blank">GitHub</a>
-  </div>
-  <div class="footer-col footer-powered">
-    <span class="footer-powered-label">Powered by</span>
-    <div class="footer-badge-row">
-      <span class="footer-badge footer-badge-primary"><img src="assets/badges/xlayer.svg" alt="" onerror="this.style.display='none'"> X Layer</span>
-      <span class="footer-badge footer-badge-primary"><img src="assets/wallets/okx.svg" alt="" onerror="this.style.display='none'"> OKX Wallet</span>
+  <div class="footer-top">
+    <div class="footer-brand-col">
+      <span class="footer-brand">BuildOS</span>
+      <span class="footer-tagline">Natural language to onchain agents on X Layer.</span>
+      <div class="footer-badge-row" style="margin-top:12px">
+        <span class="footer-badge footer-badge-primary"><img src="assets/badges/xlayer.svg" alt="" onerror="this.style.display='none'"> X Layer</span>
+        <span class="footer-badge footer-badge-primary"><img src="assets/wallets/okx.svg" alt="" onerror="this.style.display='none'"> OKX Wallet</span>
+        <span class="footer-badge">MetaMask</span>
+      </div>
     </div>
-    <span class="footer-secondary-note">Also supports MetaMask</span>
+    <div class="footer-links-col">
+      <span class="footer-links-label">Product</span>
+      <a href="console.html">Console</a>
+      <a href="templates.html">Templates</a>
+      <a href="demo.html">Live Demo</a>
+      <a href="how-it-works.html">How it Works</a>
+    </div>
+    <div class="footer-links-col">
+      <span class="footer-links-label">Legal</span>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="demo-disclosure.html">About Demo Mode</a>
+      <a href="https://github.com/princeflexzy0/buildos" target="_blank">GitHub</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Built for the X Layer AI Season Hackathon 2026</span>
+    <span>© 2026 BuildOS. All rights reserved.</span>
   </div>
 </footer>
 
