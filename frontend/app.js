@@ -1,4 +1,4 @@
-const { COMPILER_URL, MONITOR_URL, EXPLORER_BASE } = window.BUILDOS_CONFIG;
+const { COMPILER_URL, MONITOR_URL, EXPLORER_ADDRESS_BASE, EXPLORER_TX_BASE } = window.BUILDOS_CONFIG;
 
 const compilerInput = document.getElementById("compilerInput");
 const compileBtn = document.getElementById("compileBtn");
@@ -330,9 +330,9 @@ function renderAgent(agent) {
     ? Math.round(agent.triggers[0].thresholdSeconds / 86400) : null;
   const links = [];
   if (agent.onchain?.agentContractAddress)
-    links.push(`<a href="${EXPLORER_BASE}/${agent.onchain.agentContractAddress}" target="_blank">contract ↗</a>`);
+    links.push(`<a href="${EXPLORER_ADDRESS_BASE}/${agent.onchain.agentContractAddress}" target="_blank">contract ↗</a>`);
   if (agent.onchain?.createTxHash)
-    links.push(`<a href="${EXPLORER_BASE}/${agent.onchain.createTxHash}" target="_blank">create tx ↗</a>`);
+    links.push(`<a href="${EXPLORER_TX_BASE}/${agent.onchain.createTxHash}" target="_blank">create tx ↗</a>`);
 
   return `
     <div class="agent-card" data-hash="${agent.configHash}">
