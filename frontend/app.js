@@ -366,6 +366,7 @@ function renderAgent(agent) {
       <div class="agent-hash">${agent.configHash}</div>
       ${committed ? `<div class="agent-balance" id="balance-${agent.configHash}">balance: loading…</div>` : ""}
       <div class="agent-last-checkin" id="checkin-${agent.configHash}">last check-in: ${agent.lastCheckin ? new Date(agent.lastCheckin * 1000).toLocaleTimeString() : "never"}</div>
+      <div class="agent-escrow-countdown" id="escrow-countdown-${agent.configHash}" style="display:none"></div>
       <div class="agent-actions">
         <button class="btn-small" onclick="doCheckin('${agent.configHash}')">Check In</button>
         ${!committed ? `<button class="btn-small btn-primary" onclick="doCommit('${agent.configHash}')">Commit Onchain</button>` : ""}
@@ -429,6 +430,7 @@ async function refreshAgents() {
     agentList.innerHTML = agents.map(renderAgent).join("");
     // Fetch balance for each committed agent's card individually
     agents.filter(a => a.onchain?.committed).forEach(a => refreshCardBalance(a.configHash));
+    agents.forEach(a => showEscrowCountdownBadge(a.configHash));
   } catch {
     agentList.innerHTML = `<p class="empty-state">Could not reach Signal Monitor.</p>`;
   }
@@ -587,6 +589,9 @@ async function handleEscrowDeposit() {
     );
     currentConfig.escrowDepositId = depositId;
     currentConfig.escrowUnlockAt = unlockAt;
+    try {
+      localStorage.setItem(`escrow_${currentConfig.configHash}`, JSON.stringify({ depositId, unlockAt }));
+    } catch {}
     statusRow.style.display = "flex";
     const unlockDate = new Date(unlockAt * 1000).toLocaleString();
     statusVal.innerHTML = `Locked · id ${depositId} · unlocks ${unlockDate} · <a href="${window.BUILDOS_CONFIG.EXPLORER_TX_BASE}/${txHash}" target="_blank">tx ↗</a> <button class="btn-small" id="withdrawEscrowBtn" disabled>Withdraw</button> <span id="withdrawCountdown"></span>`;
@@ -643,4 +648,31 @@ function startWithdrawWatcher(depositId, unlockAt) {
       btn.textContent = "Withdraw";
     }
   });
+}
+
+// ─── Escrow countdown badge on agent cards ─────────────────────────────────────
+function showEscrowCountdownBadge(configHash) {
+  const el = document.getElementById(`escrow-countdown-${configHash}`);
+  if (!el) return;
+  let stored;
+  try {
+    stored = JSON.parse(localStorage.getItem(`escrow_${configHash}`) || "null");
+  } catch {
+    stored = null;
+  }
+  if (!stored) return;
+
+  el.style.display = "block";
+  const tick = () => {
+    const secondsLeft = stored.unlockAt - Math.floor(Date.now() / 1000);
+    if (secondsLeft <= 0) {
+      el.textContent = "🔓 escrow unlocked";
+      return;
+    }
+    const d = Math.floor(secondsLeft / 86400);
+    const h = Math.floor((secondsLeft % 86400) / 3600);
+    const m = Math.floor((secondsLeft % 3600) / 60);
+    el.textContent = `⏳ escrow unlocks in ${d}d ${h}h ${m}m`;
+  };
+  tick();
 }
