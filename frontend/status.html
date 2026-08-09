@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Status - BuildOS</title>
+<link rel="icon" href="assets/logo-final.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="legal.css">
+<style>
+  .status-page-wrap { max-width: 640px; margin: 0 auto; padding: 60px 24px; }
+  .status-card { background: var(--card-bg, #fff); border: 1px solid var(--border, #e5e5e0); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+  .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; font-size: 0.85em; font-weight: 500; }
+  .status-badge.watching { background: #eef6f0; color: #2d6a4f; }
+  .status-badge.fired { background: #fdeeee; color: #b3261e; }
+  .status-countdown { font-family: 'JetBrains Mono', monospace; font-size: 1.4em; margin: 16px 0; }
+  .status-letter { background: #faf9f5; border-left: 3px solid var(--accent, #2d6a4f); padding: 20px 24px; border-radius: 8px; font-family: 'Playfair Display', serif; font-style: italic; line-height: 1.7; white-space: pre-wrap; }
+  .status-not-found { text-align: center; padding: 80px 24px; color: #888; }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand">
+      <div class="logo-hex"><img src="assets/logo-final.png" alt="BuildOS" style="width:100%;height:100%;object-fit:contain"></div>
+      <div class="brand-text"><span class="brand-name">BuildOS</span><span class="brand-sub">ONCHAIN AGENTS</span></div>
+    </a>
+    <nav class="nav-links">
+      <a href="how-it-works.html">How it Works</a>
+      <a href="console.html">Console</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page-main">
+  <div class="status-page-wrap" id="statusWrap">
+    <div style="text-align:center;padding:60px 0;color:#888">Loading agent status…</div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer-bottom">
+    <span>BuildOS — funds sit in a non-custodial contract, not in our wallet.</span>
+    <span><a href="how-it-works.html">How escrow works ↗</a></span>
+  </div>
+</footer>
+
+<script src="config.js?v=1786218574"></script>
+<script>
+(async function() {
+  const wrap = document.getElementById("statusWrap");
+  const params = new URLSearchParams(window.location.search);
+  const hash = params.get("hash");
+
+  if (!hash) {
+    wrap.innerHTML = `<div class="status-not-found"><h2>No agent specified</h2><p>This page needs a link with ?hash=... to look up an agent's status.</p></div>`;
+    return;
+  }
+
+  try {
+    const res = await fetch(`${window.BUILDOS_CONFIG.MONITOR_URL}/status/${hash}`);
+    const data = await res.json();
+
+    if (!data.success || !data.agent) {
+      wrap.innerHTML = `<div class="status-not-found"><h2>Agent not found</h2><p>This link may be incorrect, or the agent no longer exists.</p></div>`;
+      return;
+    }
+
+    const agent = data.agent;
+    const trigger = agent.triggers?.[0];
+    const days = trigger?.thresholdSeconds ? Math.round(trigger.thresholdSeconds / 86400) : null;
+    const lastCheckin = agent.lastCheckin ? new Date(agent.lastCheckin * 1000) : null;
+    const secondsSinceCheckin = lastCheckin ? Math.floor(Date.now() / 1000) - agent.lastCheckin : null;
+    const secondsRemaining = trigger?.thresholdSeconds && secondsSinceCheckin !== null
+      ? trigger.thresholdSeconds - secondsSinceCheckin
+      : null;
+
+    let countdownHtml = "";
+    if (secondsRemaining !== null) {
+      if (secondsRemaining <= 0) {
+        countdownHtml = `<div class="status-countdown" style="color:#b3261e">Trigger condition met</div>`;
+      } else {
+        const d = Math.floor(secondsRemaining / 86400);
+        const h = Math.floor((secondsRemaining % 86400) / 3600);
+        countdownHtml = `<div class="status-countdown">${d}d ${h}h until trigger, unless the owner checks in</div>`;
+      }
+    }
+
+    const badgeClass = agent.consensusMet ? "fired" : "watching";
+    const badgeText = agent.consensusMet ? "Trigger conditions met" : "Watching";
+
+    let letterHtml = "";
+    if (agent.beneficiaryLetter) {
+      letterHtml = `
+        <div class="status-card">
+          <h3 style="margin-top:0">A note for you</h3>
+          <div class="status-letter">${agent.beneficiaryLetter}</div>
+        </div>`;
+    }
+
+    wrap.innerHTML = `
+      <div class="status-card">
+        <span class="status-badge ${badgeClass}">${badgeText}</span>
+        <h1 style="margin:16px 0 8px">${agent.label || agent.agentType || "Agent"}</h1>
+        <p style="color:#666;margin-bottom:16px">${agent.config?.description || ""}</p>
+        ${countdownHtml}
+        <p style="font-size:0.9em;color:#888">
+          Last check-in: ${lastCheckin ? lastCheckin.toLocaleString() : "never"}<br>
+          ${days ? `Owner must check in at least every ${days} days.` : ""}
+        </p>
+        ${agent.onchain?.committed ? `<p style="margin-top:16px"><a href="${window.BUILDOS_CONFIG.EXPLORER_ADDRESS_BASE}/${agent.onchain.agentContractAddress}" target="_blank">View agent contract on explorer ↗</a></p>` : ""}
+      </div>
+      ${letterHtml}
+      <p style="text-align:center;color:#999;font-size:0.85em">
+        This agent's funds sit in a non-custodial smart contract. BuildOS cannot access or redirect them.
+      </p>
+    `;
+  } catch (e) {
+    wrap.innerHTML = `<div class="status-not-found"><h2>Could not load status</h2><p>${e.message}</p></div>`;
+  }
+})();
+</script>
+
+</body>
+</html>
