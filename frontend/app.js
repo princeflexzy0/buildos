@@ -159,6 +159,20 @@ function renderCompiledConfigForReview() {
         <label>Escrow Status</label>
         <span id="escrowStatusValue">—</span>
       </div>
+      <div class="config-row" id="letterRow" style="display:none;flex-direction:column;align-items:stretch">
+        <label>Letter to Beneficiary <span style="font-weight:400;opacity:0.6;font-size:0.85em">(optional, AI-drafted)</span></label>
+        <textarea id="letterNotes" placeholder="Rough notes... e.g. tell her I love her and this is for her wedding" rows="2" style="width:100%;margin-top:6px;font-family:inherit"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn-small" id="draftLetterBtn">AI-Draft It</button>
+          <button class="btn-small btn-primary" id="saveLetterBtn" style="display:none">Save Letter</button>
+        </div>
+        <div id="letterPreview" style="display:none;margin-top:10px;padding:12px;background:#faf9f5;border-left:3px solid var(--accent);font-style:italic;white-space:pre-wrap"></div>
+      </div>
+      <div class="config-row" id="shareStatusRow" style="display:none">
+        <label>Share with Beneficiary</label>
+        <button class="btn-small" id="copyStatusLinkBtn">Copy Status Link</button>
+        <span id="copyStatusFeedback" style="margin-left:8px;font-size:0.85em;opacity:0.7"></span>
+      </div>
       ${!addrValid ? `<div class="config-warning">⚠️ No wallet address found. Paste a valid 0x… address above to unlock Register and Commit.</div>` : ""}
     </div>`;
   document.getElementById("recipientInput")?.addEventListener("input", e => {
@@ -175,6 +189,9 @@ function renderCompiledConfigForReview() {
     if (addrValid) estimateAndShowGas(currentConfig);
   });
   document.getElementById("depositEscrowBtn")?.addEventListener("click", handleEscrowDeposit);
+  document.getElementById("draftLetterBtn")?.addEventListener("click", handleDraftLetter);
+  document.getElementById("saveLetterBtn")?.addEventListener("click", handleSaveLetter);
+  document.getElementById("copyStatusLinkBtn")?.addEventListener("click", handleCopyStatusLink);
   if (addrValid) estimateAndShowGas(currentConfig);
   updateCommitGate();
 }
@@ -286,6 +303,10 @@ registerBtn?.addEventListener("click", async () => {
     refreshAgentBalance(currentConfig.configHash);
     const escrowRow = document.getElementById("escrowRow");
     if (escrowRow) escrowRow.style.display = "flex";
+    const letterRow = document.getElementById("letterRow");
+    if (letterRow) letterRow.style.display = "flex";
+    const shareStatusRow = document.getElementById("shareStatusRow");
+    if (shareStatusRow) shareStatusRow.style.display = "flex";
   } catch (err) {
     alert(`Register failed: ${err.message}`);
   } finally {
@@ -680,4 +701,80 @@ function showEscrowCountdownBadge(configHash) {
     el.textContent = `⏳ escrow unlocks in ${d}d ${h}h ${m}m`;
   };
   tick();
+}
+
+// ─── Beneficiary letter + share link handlers ──────────────────────────────────
+async function handleDraftLetter() {
+  const notesEl = document.getElementById("letterNotes");
+  const btn = document.getElementById("draftLetterBtn");
+  const preview = document.getElementById("letterPreview");
+  const saveBtn = document.getElementById("saveLetterBtn");
+
+  const notes = notesEl?.value?.trim();
+  if (!notes || notes.length < 3) {
+    alert("Write a few rough notes first — even a sentence is enough.");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Drafting…";
+  try {
+    const res = await fetch(`${COMPILER_URL}/draft-letter`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notes }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || "draft failed");
+
+    preview.textContent = data.letter;
+    preview.style.display = "block";
+    preview.contentEditable = "true";
+    saveBtn.style.display = "inline-block";
+  } catch (err) {
+    alert(`Couldn't draft letter: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "AI-Draft It";
+  }
+}
+
+async function handleSaveLetter() {
+  const preview = document.getElementById("letterPreview");
+  const saveBtn = document.getElementById("saveLetterBtn");
+  if (!currentConfig?.configHash) return;
+
+  const letter = preview?.innerText?.trim();
+  if (!letter) return;
+
+  saveBtn.disabled = true;
+  saveBtn.textContent = "Saving…";
+  try {
+    const res = await fetch(`${MONITOR_URL}/letter/${currentConfig.configHash}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ letter }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || "save failed");
+    saveBtn.textContent = "Saved ✓";
+  } catch (err) {
+    alert(`Couldn't save letter: ${err.message}`);
+    saveBtn.disabled = false;
+    saveBtn.textContent = "Save Letter";
+  }
+}
+
+function handleCopyStatusLink() {
+  if (!currentConfig?.configHash) return;
+  const link = `${window.location.origin}/status?hash=${currentConfig.configHash}`;
+  const feedback = document.getElementById("copyStatusFeedback");
+  navigator.clipboard.writeText(link).then(() => {
+    if (feedback) {
+      feedback.textContent = "Copied!";
+      setTimeout(() => { feedback.textContent = ""; }, 2000);
+    }
+  }).catch(() => {
+    prompt("Copy this link:", link);
+  });
 }
