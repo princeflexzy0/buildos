@@ -139,3 +139,20 @@ async function fireDemoTx() {
     box.innerHTML = `⚠️ Demo backend unreachable (${err.message}). This means the live tx couldn't be sent — check the server is running and the demo wallet is funded.`;
   }
 }
+
+// Load template from URL param — runs after demo.js is fully parsed,
+// so loadTemplate is guaranteed to exist when this fires.
+(function() {
+  function tryLoadTemplate() {
+    const t = new URLSearchParams(location.search).get("template");
+    if (!t) return;
+    if (typeof loadTemplate === "function") {
+      loadTemplate(t);
+    }
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", tryLoadTemplate);
+  } else {
+    tryLoadTemplate();
+  }
+})();
