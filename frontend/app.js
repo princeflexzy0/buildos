@@ -172,6 +172,10 @@ function renderCompiledConfigForReview() {
         <label>Trusted Guardians <span style="font-weight:400;opacity:0.6;font-size:0.85em">(optional — names of people who can also confirm you're okay)</span></label>
         <input type="text" id="guardianNamesInput" placeholder="e.g. Mom, Uncle James" style="width:100%;margin-top:6px">
       </div>
+      <div class="config-row" id="guardianThresholdRow" style="flex-direction:column;align-items:stretch">
+        <label>Guardians Required <span style="font-weight:400;opacity:0.6;font-size:0.85em">(how many must confirm to reset the countdown)</span></label>
+        <input type="number" id="guardianThresholdInput" min="1" value="1" style="width:100%;margin-top:6px">
+      </div>
       <div class="config-row" id="ownerEmailRow" style="flex-direction:column;align-items:stretch">
         <label>Your Email <span style="font-weight:400;opacity:0.6;font-size:0.85em">(get warned before this agent triggers)</span></label>
         <input type="email" id="ownerEmailInput" placeholder="you@example.com" style="width:100%;margin-top:6px">
@@ -301,6 +305,7 @@ registerBtn?.addEventListener("click", async () => {
   try {
     const guardianNames = (document.getElementById("guardianNamesInput")?.value || "")
       .split(",").map(s => s.trim()).filter(Boolean);
+    const guardianThreshold = parseInt(document.getElementById("guardianThresholdInput")?.value || "1", 10) || 1;
     const ownerEmail = (document.getElementById("ownerEmailInput")?.value || "").trim() || null;
     const beneficiaryEmail = (document.getElementById("beneficiaryEmailInput")?.value || "").trim() || null;
     const mergedConfig = {
@@ -309,6 +314,7 @@ registerBtn?.addEventListener("click", async () => {
       amount: currentConfig.amount,
       token: currentConfig.token,
       guardians: guardianNames,
+      guardianThreshold,
       ownerEmail,
       beneficiaryEmail,
     };

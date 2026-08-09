@@ -157,8 +157,14 @@
             guardianBtn.disabled = false;
             return;
           }
-          feedback.style.color = "#2d6a4f";
-          feedback.textContent = "Thanks — countdown reset.";
+          if (d.pending) {
+            feedback.style.color = "#a67c00";
+            feedback.textContent = `${d.confirmedCount} of ${d.threshold} guardians confirmed — waiting on others.`;
+            guardianBtn.disabled = false;
+          } else {
+            feedback.style.color = "#2d6a4f";
+            feedback.textContent = "Thanks — countdown reset.";
+          }
         } catch (e) {
           feedback.style.color = "#b3261e";
           feedback.textContent = "Network error, try again.";

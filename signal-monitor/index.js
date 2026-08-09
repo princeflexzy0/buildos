@@ -45,6 +45,7 @@ function registerAgent(config, ownerAddress) {
     existing.config = config;
     existing.label = config.label || existing.label;
     existing.guardians = config.guardians || existing.guardians || [];
+    existing.guardianThreshold = config.guardianThreshold || existing.guardianThreshold || 1;
     existing.ownerEmail = config.ownerEmail || existing.ownerEmail || null;
     existing.beneficiaryEmail = config.beneficiaryEmail || existing.beneficiaryEmail || null;
     saveToDisk();
@@ -57,6 +58,8 @@ function registerAgent(config, ownerAddress) {
     label: config.label,
     owner: ownerAddress || null,  // wallet address that created this agent
     guardians: config.guardians || [],
+    guardianThreshold: config.guardianThreshold || 1,
+    pendingGuardianConfirmations: [],
     ownerEmail: config.ownerEmail || null,
     beneficiaryEmail: config.beneficiaryEmail || null,
     notifiedThresholds: [],
@@ -121,10 +124,37 @@ function guardianCheckin(hash, guardianName) {
     (g) => g.trim().toLowerCase() === (guardianName || "").trim().toLowerCase()
   );
   if (!match) return { error: "not_a_guardian" };
+
+  const threshold = state.guardianThreshold || 1;
+  state.pendingGuardianConfirmations = state.pendingGuardianConfirmations || [];
+
+  const alreadyConfirmed = state.pendingGuardianConfirmations.some(
+    (c) => c.name.toLowerCase() === match.toLowerCase()
+  );
+  if (!alreadyConfirmed) {
+    state.pendingGuardianConfirmations.push({ name: match, at: nowSec() });
+  }
+
+  const confirmedCount = state.pendingGuardianConfirmations.length;
+  if (confirmedCount < threshold) {
+    saveToDisk();
+    return {
+      state,
+      pending: true,
+      confirmedCount,
+      threshold,
+      confirmedBy: state.pendingGuardianConfirmations.map((c) => c.name),
+    };
+  }
+
   const updated = checkin(hash);
-  updated.lastGuardianCheckin = { name: match, at: nowSec() };
+  updated.lastGuardianCheckin = {
+    names: state.pendingGuardianConfirmations.map((c) => c.name),
+    at: nowSec(),
+  };
+  updated.pendingGuardianConfirmations = [];
   saveToDisk();
-  return { state: updated };
+  return { state: updated, pending: false };
 }
 
 function simulateSignal(hash, signalType) {

@@ -163,7 +163,14 @@ const server = http.createServer(async (req, res) => {
       return res.end(JSON.stringify({ error: "name not recognized as a guardian for this agent" }));
     }
     res.writeHead(200, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify({ success: true, agent: result.state }));
+    return res.end(JSON.stringify({
+      success: true,
+      agent: result.state,
+      pending: result.pending,
+      confirmedCount: result.confirmedCount,
+      threshold: result.threshold,
+      confirmedBy: result.confirmedBy,
+    }));
   }
 
   if (req.method === "POST" && parts[0] === "simulate" && parts[1]) {
