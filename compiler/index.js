@@ -72,6 +72,49 @@ async function callOpenAI(prompt) {
   });
 }
 
+const LETTER_SYSTEM_PROMPT = `You write warm, personal letters on behalf of someone setting up a digital-will style agent for a loved one. Given rough notes from the owner, expand them into a short, heartfelt letter (120-200 words) addressed to the beneficiary. Keep the owner's original intent and tone, don't invent facts they didn't mention, and don't be overly dramatic or generic. Sign off simply. Output ONLY the letter text, no preamble, no markdown.`;
+
+async function draftLetter(notes) {
+  if (!process.env.OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not set in .env");
+  const body = JSON.stringify({
+    model: "gpt-4o",
+    messages: [
+      { role: "system", content: LETTER_SYSTEM_PROMPT },
+      { role: "user", content: notes },
+    ],
+    temperature: 0.7,
+  });
+  return new Promise((resolve, reject) => {
+    const req = https.request(
+      {
+        hostname: "api.openai.com",
+        path: "/v1/chat/completions",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+      },
+      (res) => {
+        let data = "";
+        res.on("data", (chunk) => (data += chunk));
+        res.on("end", () => {
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.error) return reject(new Error(parsed.error.message));
+            resolve(parsed.choices[0].message.content.trim());
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+    );
+    req.on("error", reject);
+    req.write(body);
+    req.end();
+  });
+}
+
 async function compile(description) {
   if (!process.env.OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not set in .env");
   console.log(`\n Compiling: "${description}"\n`);
@@ -106,4 +149,4 @@ async function main() {
 }
 
 main();
-module.exports = { compile };
+module.exports = { compile, draftLetter };

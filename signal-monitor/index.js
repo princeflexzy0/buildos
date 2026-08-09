@@ -202,6 +202,14 @@ function deleteAgent(hash) {
   return existed;
 }
 
+function setBeneficiaryLetter(hash, letter) {
+  const state = registry.get(hash);
+  if (!state) return null;
+  state.beneficiaryLetter = letter;
+  saveToDisk();
+  return state;
+}
+
 module.exports = {
   registerAgent,
   getAgent,
@@ -213,6 +221,7 @@ module.exports = {
   tickAll,
   commitOnchain,
   commitVerdictOnchain,
+  setBeneficiaryLetter,
   deleteAgent,
   registry,
 };

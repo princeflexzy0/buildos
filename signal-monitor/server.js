@@ -9,6 +9,7 @@ const {
   commitOnchain,
   commitVerdictOnchain,
   deleteAgent,
+  setBeneficiaryLetter,
 } = require("./index");
 const chain = require("./chain");
 
@@ -113,6 +114,26 @@ const server = http.createServer(async (req, res) => {
     return res.end(JSON.stringify({ success: true, agent: state }));
   }
 
+  if (req.method === "POST" && parts[0] === "letter" && parts[1]) {
+    let body = "";
+    req.on("data", (chunk) => (body += chunk));
+    req.on("end", () => {
+      try {
+        const { letter } = JSON.parse(body || "{}");
+        const agent = setBeneficiaryLetter(parts[1], letter);
+        if (!agent) {
+          res.writeHead(404, { "Content-Type": "application/json" });
+          return res.end(JSON.stringify({ error: "agent not found" }));
+        }
+        res.writeHead(200, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ success: true, agent }));
+      } catch (e) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ error: "invalid body" }));
+      }
+    });
+    return;
+  }
   if (req.method === "POST" && parts[0] === "checkin" && parts[1]) {
     const state = checkin(parts[1]);
     if (!state) {

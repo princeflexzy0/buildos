@@ -1,6 +1,6 @@
 const http = require("http");
 const crypto = require("crypto");
-const { compile } = require("./index");
+const { compile, draftLetter } = require("./index");
 require("dotenv").config();
 
 const PORT = process.env.COMPILER_PORT || 3001;
@@ -49,6 +49,21 @@ const server = http.createServer(async (req, res) => {
       const config = await compile(description.trim());
       res.writeHead(200,{"Content-Type":"application/json"});
       res.end(JSON.stringify({success:true,config}));
+    } catch (err) {
+      res.writeHead(500,{"Content-Type":"application/json"});
+      res.end(JSON.stringify({error:err.message}));
+    }
+    return;
+  }
+  if (req.method === "POST" && url === "/draft-letter") {
+    let body;
+    try { body = await readBody(req); } catch { res.writeHead(400,{"Content-Type":"application/json"}); return res.end(JSON.stringify({error:"Invalid JSON body"})); }
+    const { notes } = body;
+    if (!notes || notes.trim().length < 3) { res.writeHead(400,{"Content-Type":"application/json"}); return res.end(JSON.stringify({error:"notes required"})); }
+    try {
+      const letter = await draftLetter(notes.trim());
+      res.writeHead(200,{"Content-Type":"application/json"});
+      res.end(JSON.stringify({success:true,letter}));
     } catch (err) {
       res.writeHead(500,{"Content-Type":"application/json"});
       res.end(JSON.stringify({error:err.message}));
