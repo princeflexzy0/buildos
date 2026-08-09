@@ -1,6 +1,7 @@
 // BuildOS Signal Monitor - core signal checking + consensus logic
 const crypto = require("crypto");
 const fs = require("fs");
+const db = require("./db");
 const path = require("path");
 const chain = require("./chain");
 const notifier = require("./notifier");
@@ -8,26 +9,12 @@ const notifier = require("./notifier");
 const DB_PATH = path.join(__dirname, "agents.json");
 
 // Load from disk on startup
-const registry = new Map();
+let registry = new Map();
 function loadFromDisk() {
-  try {
-    if (fs.existsSync(DB_PATH)) {
-      const raw = JSON.parse(fs.readFileSync(DB_PATH, "utf8"));
-      Object.entries(raw).forEach(([hash, state]) => registry.set(hash, state));
-      console.log(`[monitor] loaded ${registry.size} agents from disk`);
-    }
-  } catch (e) {
-    console.warn("[monitor] could not load agents.json:", e.message);
-  }
+  registry = db.loadAll();
 }
 function saveToDisk() {
-  try {
-    const obj = {};
-    registry.forEach((state, hash) => { obj[hash] = state; });
-    fs.writeFileSync(DB_PATH, JSON.stringify(obj, null, 2));
-  } catch (e) {
-    console.warn("[monitor] could not save agents.json:", e.message);
-  }
+  db.saveAll(registry);
 }
 loadFromDisk();
 
@@ -305,12 +292,8 @@ async function commitVerdictOnchain(hash) {
 }
 
 function deleteAgent(hash) {
-  const existed = registry.has(hash);
-  if (existed) {
-    registry.delete(hash);
-    saveToDisk();
-  }
-  return existed;
+  registry.delete(hash);
+  db.deleteAgent(hash);
 }
 
 function setBeneficiaryLetter(hash, letter) {

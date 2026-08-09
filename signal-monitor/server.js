@@ -1,4 +1,5 @@
 const http = require("http");
+const { issueToken, verifyToken } = require("./magiclink");
 const {
   registerAgent,
   getAgent,
@@ -111,6 +112,16 @@ const server = http.createServer(async (req, res) => {
     }
     const ownerAddress = (body.ownerAddress || "").toLowerCase() || null;
     const state = registerAgent(config, ownerAddress);
+    // Issue magic-link tokens for each guardian that has an email
+    if (Array.isArray(config.guardians)) {
+      for (const g of config.guardians) {
+        if (g && typeof g === "object" && g.email && g.name) {
+          issueToken(state.hash, g.name, g.email).catch((e) =>
+            console.warn("[magiclink] failed to send to", g.email, e.message)
+          );
+        }
+      }
+    }
     res.writeHead(200, { "Content-Type": "application/json" });
     return res.end(JSON.stringify({ success: true, agent: state }));
   }
@@ -143,6 +154,31 @@ const server = http.createServer(async (req, res) => {
     }
     res.writeHead(200, { "Content-Type": "application/json" });
     return res.end(JSON.stringify({ success: true, agent: state }));
+  }
+
+  // Magic-link token verification — guardian clicks emailed link
+  if (req.method === "GET" && parts[0] === "guardian" && parts[1] === "verify") {
+    const urlObj = new URL(req.url, "http://localhost");
+    const token = urlObj.searchParams.get("token");
+    if (!token) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "missing token" }));
+    }
+    const claimed = verifyToken(token);
+    if (!claimed) {
+      res.writeHead(403, { "Content-Type": "text/html" });
+      return res.end("<h2>Invalid or already-used link. Ask the agent owner to resend.</h2>");
+    }
+    const result = guardianCheckin(claimed.agentHash, claimed.guardianName);
+    if (result.error) {
+      res.writeHead(400, { "Content-Type": "text/html" });
+      return res.end(`<h2>Check-in failed: ${result.error}</h2>`);
+    }
+    res.writeHead(200, { "Content-Type": "text/html" });
+    const msg = result.pending
+      ? `Confirmed! ${result.confirmedCount} of ${result.threshold} guardians have checked in.`
+      : "All guardians confirmed — countdown reset. Thank you!";
+    return res.end(`<h2>✅ ${msg}</h2>`);
   }
 
   if (req.method === "POST" && parts[0] === "guardian-checkin" && parts[1]) {
