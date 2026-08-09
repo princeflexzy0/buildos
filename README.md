@@ -175,7 +175,7 @@ Frontend + signal-monitor both deploy to Railway. Custom domain
 - Email notifications at 50%/75%/90% countdown + trigger-fired (owner + beneficiary)
 - Resend integration with 3 branded HTML templates
 - Domain verified (DKIM/SPF/DMARC) on buildos.tech
-- Support inbox via Titan Mail (support@buildos.tech)
+- Support inbox (support@buildos.tech)
 - Logo/favicon cleanup (white-flattened, no transparency artifacts)
 
 ### M-of-N Guardian Consensus + Status UI (session 2)
