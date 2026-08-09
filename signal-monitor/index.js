@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 const chain = require("./chain");
+const notifier = require("./notifier");
 
 const DB_PATH = path.join(__dirname, "agents.json");
 
@@ -44,6 +45,8 @@ function registerAgent(config, ownerAddress) {
     existing.config = config;
     existing.label = config.label || existing.label;
     existing.guardians = config.guardians || existing.guardians || [];
+    existing.ownerEmail = config.ownerEmail || existing.ownerEmail || null;
+    existing.beneficiaryEmail = config.beneficiaryEmail || existing.beneficiaryEmail || null;
     saveToDisk();
     return existing;
   }
@@ -54,6 +57,10 @@ function registerAgent(config, ownerAddress) {
     label: config.label,
     owner: ownerAddress || null,  // wallet address that created this agent
     guardians: config.guardians || [],
+    ownerEmail: config.ownerEmail || null,
+    beneficiaryEmail: config.beneficiaryEmail || null,
+    notifiedThresholds: [],
+    triggerEmailSent: false,
     registeredAt: nowSec(),
     lastCheckin: nowSec(),
     signals: (config.signals || []).map((s) => ({
@@ -95,6 +102,7 @@ function checkin(hash) {
   const state = registry.get(hash);
   if (!state) return null;
   state.lastCheckin = nowSec();
+  state.notifiedThresholds = [];
   state.signals.forEach((s) => {
     if (s.signalType === "inactivity_check" || s.signalType === "checkin_miss") {
       s.fired = false;
@@ -131,6 +139,38 @@ function simulateSignal(hash, signalType) {
   return state;
 }
 
+const WARNING_THRESHOLDS = [0.5, 0.75, 0.9];
+
+function statusUrlFor(hash) {
+  const base = process.env.SITE_URL || "https://buildos.tech";
+  return `${base}/status.html?hash=${hash}`;
+}
+
+function checkWarningThresholds(state) {
+  if (!state.ownerEmail) return;
+  const t = state.triggers.find((tr) => (tr.type === "inactivity" || tr.type === "checkin_miss") && tr.thresholdSeconds);
+  if (!t) return;
+  const elapsed = nowSec() - state.lastCheckin;
+  const fraction = elapsed / t.thresholdSeconds;
+  const remaining = t.thresholdSeconds - elapsed;
+  if (remaining <= 0) return;
+
+  for (const threshold of WARNING_THRESHOLDS) {
+    if (fraction >= threshold && !state.notifiedThresholds.includes(threshold)) {
+      state.notifiedThresholds.push(threshold);
+      const daysRemaining = Math.floor(remaining / 86400);
+      const hoursRemaining = Math.ceil(remaining / 3600);
+      notifier.sendWarningEmail({
+        to: state.ownerEmail,
+        label: state.label,
+        statusUrl: statusUrlFor(state.configHash),
+        daysRemaining,
+        hoursRemaining,
+      }).catch((e) => console.warn("[notifier] warning email failed:", e.message));
+    }
+  }
+}
+
 function autoEvaluate(state) {
   const elapsed = nowSec() - state.lastCheckin;
   state.triggers.forEach((t) => {
@@ -146,7 +186,26 @@ function autoEvaluate(state) {
       }
     }
   });
+  checkWarningThresholds(state);
   evaluateConsensus(state);
+  if (state.consensusMet && !state.triggerEmailSent) {
+    state.triggerEmailSent = true;
+    const statusUrl = statusUrlFor(state.configHash);
+    if (state.ownerEmail) {
+      notifier.sendTriggerFiredOwnerEmail({
+        to: state.ownerEmail,
+        label: state.label,
+        statusUrl,
+      }).catch((e) => console.warn("[notifier] trigger owner email failed:", e.message));
+    }
+    if (state.beneficiaryEmail) {
+      notifier.sendTriggerFiredBeneficiaryEmail({
+        to: state.beneficiaryEmail,
+        label: state.label,
+        statusUrl,
+      }).catch((e) => console.warn("[notifier] trigger beneficiary email failed:", e.message));
+    }
+  }
 }
 
 function evaluateConsensus(state) {

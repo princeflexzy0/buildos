@@ -172,6 +172,14 @@ function renderCompiledConfigForReview() {
         <label>Trusted Guardians <span style="font-weight:400;opacity:0.6;font-size:0.85em">(optional — names of people who can also confirm you're okay)</span></label>
         <input type="text" id="guardianNamesInput" placeholder="e.g. Mom, Uncle James" style="width:100%;margin-top:6px">
       </div>
+      <div class="config-row" id="ownerEmailRow" style="flex-direction:column;align-items:stretch">
+        <label>Your Email <span style="font-weight:400;opacity:0.6;font-size:0.85em">(get warned before this agent triggers)</span></label>
+        <input type="email" id="ownerEmailInput" placeholder="you@example.com" style="width:100%;margin-top:6px">
+      </div>
+      <div class="config-row" id="beneficiaryEmailRow" style="flex-direction:column;align-items:stretch">
+        <label>Beneficiary Email <span style="font-weight:400;opacity:0.6;font-size:0.85em">(optional — notified only if/when this agent triggers)</span></label>
+        <input type="email" id="beneficiaryEmailInput" placeholder="them@example.com" style="width:100%;margin-top:6px">
+      </div>
       <div class="config-row" id="shareStatusRow" style="display:none">
         <label>Share with Beneficiary</label>
         <button class="btn-small" id="copyStatusLinkBtn">Copy Status Link</button>
@@ -293,12 +301,16 @@ registerBtn?.addEventListener("click", async () => {
   try {
     const guardianNames = (document.getElementById("guardianNamesInput")?.value || "")
       .split(",").map(s => s.trim()).filter(Boolean);
+    const ownerEmail = (document.getElementById("ownerEmailInput")?.value || "").trim() || null;
+    const beneficiaryEmail = (document.getElementById("beneficiaryEmailInput")?.value || "").trim() || null;
     const mergedConfig = {
       ...rawConfig,
       recipient: currentConfig.recipient,
       amount: currentConfig.amount,
       token: currentConfig.token,
       guardians: guardianNames,
+      ownerEmail,
+      beneficiaryEmail,
     };
     const res = await fetch(`${MONITOR_URL}/register`, {
       method: "POST",
