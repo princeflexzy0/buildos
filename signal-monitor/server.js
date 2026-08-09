@@ -1,5 +1,6 @@
 const http = require("http");
 const { issueToken, verifyToken } = require("./magiclink");
+const { verifySignature, isRegisteredGuardian } = require("./walletsig");
 const {
   registerAgent,
   getAgent,
@@ -209,6 +210,46 @@ const server = http.createServer(async (req, res) => {
     }));
   }
 
+  // Wallet-signature guardian check-in
+  if (req.method === "POST" && parts[0] === "guardian-sig" && parts[1]) {
+    let body;
+    try { body = await readBody(req); } catch {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "Invalid JSON body" }));
+    }
+    const state = getAgent(parts[1]);
+    if (!state) {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "agent not found" }));
+    }
+    const { address, signature } = body;
+    if (!address || !signature) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "address and signature required" }));
+    }
+    if (!isRegisteredGuardian(state, address)) {
+      res.writeHead(403, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "address not registered as guardian" }));
+    }
+    const verified = verifySignature(parts[1], address, signature);
+    if (!verified) {
+      res.writeHead(403, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "signature invalid" }));
+    }
+    // Find guardian name from address
+    const guardian = state.guardians.find(
+      g => typeof g === "object" && (g.address || "").toLowerCase() === address.toLowerCase()
+    );
+    const result = guardianCheckin(parts[1], guardian ? guardian.name : address);
+    res.writeHead(200, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({
+      success: true,
+      pending: result.pending,
+      confirmedCount: result.confirmedCount,
+      threshold: result.threshold,
+    }));
+  }
+
   if (req.method === "POST" && parts[0] === "simulate" && parts[1]) {
     let body;
     try {
@@ -263,3 +304,6 @@ server.listen(PORT, () => {
   console.log(`Auto-tick every ${TICK_INTERVAL_MS / 1000}s`);
   setInterval(tickAll, TICK_INTERVAL_MS);
 });
+
+// Wallet-signature guardian check-in
+// POST /guardian-sig/:hash  { address, signature }
