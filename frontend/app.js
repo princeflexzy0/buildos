@@ -168,6 +168,10 @@ function renderCompiledConfigForReview() {
         </div>
         <div id="letterPreview" style="display:none;margin-top:10px;padding:12px;background:#faf9f5;border-left:3px solid var(--accent);font-style:italic;white-space:pre-wrap"></div>
       </div>
+      <div class="config-row" id="guardiansRow" style="flex-direction:column;align-items:stretch">
+        <label>Trusted Guardians <span style="font-weight:400;opacity:0.6;font-size:0.85em">(optional — names of people who can also confirm you're okay)</span></label>
+        <input type="text" id="guardianNamesInput" placeholder="e.g. Mom, Uncle James" style="width:100%;margin-top:6px">
+      </div>
       <div class="config-row" id="shareStatusRow" style="display:none">
         <label>Share with Beneficiary</label>
         <button class="btn-small" id="copyStatusLinkBtn">Copy Status Link</button>
@@ -287,11 +291,14 @@ registerBtn?.addEventListener("click", async () => {
   registerBtn.disabled = true;
   registerBtn.textContent = "Registering…";
   try {
+    const guardianNames = (document.getElementById("guardianNamesInput")?.value || "")
+      .split(",").map(s => s.trim()).filter(Boolean);
     const mergedConfig = {
       ...rawConfig,
       recipient: currentConfig.recipient,
       amount: currentConfig.amount,
       token: currentConfig.token,
+      guardians: guardianNames,
     };
     const res = await fetch(`${MONITOR_URL}/register`, {
       method: "POST",

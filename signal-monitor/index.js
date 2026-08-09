@@ -43,6 +43,7 @@ function registerAgent(config, ownerAddress) {
     const existing = registry.get(hash);
     existing.config = config;
     existing.label = config.label || existing.label;
+    existing.guardians = config.guardians || existing.guardians || [];
     saveToDisk();
     return existing;
   }
@@ -52,6 +53,7 @@ function registerAgent(config, ownerAddress) {
     agentType: config.agentType,
     label: config.label,
     owner: ownerAddress || null,  // wallet address that created this agent
+    guardians: config.guardians || [],
     registeredAt: nowSec(),
     lastCheckin: nowSec(),
     signals: (config.signals || []).map((s) => ({
@@ -102,6 +104,19 @@ function checkin(hash) {
   state.consensusMet = false;
   saveToDisk();
   return state;
+}
+function guardianCheckin(hash, guardianName) {
+  const state = registry.get(hash);
+  if (!state) return { error: "not_found" };
+  const guardians = state.guardians || [];
+  const match = guardians.find(
+    (g) => g.trim().toLowerCase() === (guardianName || "").trim().toLowerCase()
+  );
+  if (!match) return { error: "not_a_guardian" };
+  const updated = checkin(hash);
+  updated.lastGuardianCheckin = { name: match, at: nowSec() };
+  saveToDisk();
+  return { state: updated };
 }
 
 function simulateSignal(hash, signalType) {
@@ -229,6 +244,7 @@ module.exports = {
   commitOnchain,
   commitVerdictOnchain,
   setBeneficiaryLetter,
+  guardianCheckin,
   deleteAgent,
   registry,
 };

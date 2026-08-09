@@ -100,6 +100,17 @@
           <div class="status-letter">${agent.beneficiaryLetter}</div>
         </div>`;
     }
+    let guardianHtml = "";
+    if (agent.guardians && agent.guardians.length > 0) {
+      guardianHtml = `
+        <div class="status-card" id="guardianCard">
+          <h3 style="margin-top:0">Trusted Guardian Check-in</h3>
+          <p style="color:#666;font-size:0.9em">If you are one of the people listed as a trusted guardian for this agent, you can confirm the owner is okay to reset the countdown.</p>
+          <input type="text" id="guardianNameField" placeholder="Your name" style="width:100%;padding:8px;margin:8px 0;box-sizing:border-box">
+          <button class="btn-small" id="guardianCheckinBtn">Confirm Owner is Okay</button>
+          <span id="guardianCheckinFeedback" style="margin-left:8px;font-size:0.85em"></span>
+        </div>`;
+    }
 
     wrap.innerHTML = `
       <div class="status-card">
@@ -114,10 +125,47 @@
         ${agent.onchain?.committed ? `<p style="margin-top:16px"><a href="${window.BUILDOS_CONFIG.EXPLORER_ADDRESS_BASE}/${agent.onchain.agentContractAddress}" target="_blank">View agent contract on explorer ↗</a></p>` : ""}
       </div>
       ${letterHtml}
+      ${guardianHtml}
       <p style="text-align:center;color:#999;font-size:0.85em">
         This agent's funds sit in a non-custodial smart contract. BuildOS cannot access or redirect them.
       </p>
     `;
+    const guardianBtn = document.getElementById("guardianCheckinBtn");
+    if (guardianBtn) {
+      guardianBtn.addEventListener("click", async () => {
+        const nameField = document.getElementById("guardianNameField");
+        const feedback = document.getElementById("guardianCheckinFeedback");
+        const name = (nameField.value || "").trim();
+        if (!name) {
+          feedback.style.color = "#b3261e";
+          feedback.textContent = "Enter your name first.";
+          return;
+        }
+        guardianBtn.disabled = true;
+        feedback.style.color = "#888";
+        feedback.textContent = "Submitting…";
+        try {
+          const r = await fetch(`${window.BUILDOS_CONFIG.MONITOR_URL}/guardian-checkin/${hash}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name }),
+          });
+          const d = await r.json();
+          if (!r.ok || !d.success) {
+            feedback.style.color = "#b3261e";
+            feedback.textContent = d.error || "Could not confirm — check the name matches exactly.";
+            guardianBtn.disabled = false;
+            return;
+          }
+          feedback.style.color = "#2d6a4f";
+          feedback.textContent = "Thanks — countdown reset.";
+        } catch (e) {
+          feedback.style.color = "#b3261e";
+          feedback.textContent = "Network error, try again.";
+          guardianBtn.disabled = false;
+        }
+      });
+    }
   } catch (e) {
     wrap.innerHTML = `<div class="status-not-found"><h2>Could not load status</h2><p>${e.message}</p></div>`;
   }

@@ -10,6 +10,7 @@ const {
   commitVerdictOnchain,
   deleteAgent,
   setBeneficiaryLetter,
+  guardianCheckin,
 } = require("./index");
 const chain = require("./chain");
 
@@ -142,6 +143,27 @@ const server = http.createServer(async (req, res) => {
     }
     res.writeHead(200, { "Content-Type": "application/json" });
     return res.end(JSON.stringify({ success: true, agent: state }));
+  }
+
+  if (req.method === "POST" && parts[0] === "guardian-checkin" && parts[1]) {
+    let body;
+    try {
+      body = await readBody(req);
+    } catch {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "Invalid JSON body" }));
+    }
+    const result = guardianCheckin(parts[1], body.name);
+    if (result.error === "not_found") {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "agent not found" }));
+    }
+    if (result.error === "not_a_guardian") {
+      res.writeHead(403, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "name not recognized as a guardian for this agent" }));
+    }
+    res.writeHead(200, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({ success: true, agent: result.state }));
   }
 
   if (req.method === "POST" && parts[0] === "simulate" && parts[1]) {
