@@ -10,13 +10,13 @@ const DB_PATH = path.join(__dirname, "agents.json");
 
 // Load from disk on startup
 let registry = new Map();
-function loadFromDisk() {
-  registry = db.loadAll();
+async function loadFromDisk() {
+  registry = await db.loadAll();
 }
 function saveToDisk() {
   db.saveAll(registry);
 }
-loadFromDisk();
+loadFromDisk().then(() => console.log("[monitor] registry loaded, " + registry.size + " agents")).catch(e => console.error("[monitor] load error:", e.message));
 
 function nowSec() {
   return Math.floor(Date.now() / 1000);
@@ -252,6 +252,7 @@ function evaluateConsensus(state) {
 }
 
 function tickAll() {
+  if (!registry || typeof registry.forEach !== "function") return;
   registry.forEach((state) => {
     if (!state.executedAt) autoEvaluate(state);
   });
