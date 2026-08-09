@@ -1,4 +1,4 @@
-cat > /workspaces/buildos/README.md << 'EOF'
+
 # BuildOS — Onchain Dead Man's Switches for Agents & Wallets
 
 BuildOS lets someone configure a non-custodial "if I go silent, do this" agent:
