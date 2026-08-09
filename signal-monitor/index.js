@@ -37,8 +37,15 @@ function nowSec() {
 function registerAgent(config, ownerAddress) {
   const hash = config.configHash || ("0x" + crypto.createHash("sha256").update(JSON.stringify(config)).digest("hex"));
   
-  // If already exists, just return existing (idempotent)
-  if (registry.has(hash)) return registry.get(hash);
+  // If already exists, update mutable fields (recipient/amount edits made after compiling)
+  // but preserve check-in history, onchain status, and letters.
+  if (registry.has(hash)) {
+    const existing = registry.get(hash);
+    existing.config = config;
+    existing.label = config.label || existing.label;
+    saveToDisk();
+    return existing;
+  }
 
   const state = {
     configHash: hash,

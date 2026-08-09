@@ -287,11 +287,17 @@ registerBtn?.addEventListener("click", async () => {
   registerBtn.disabled = true;
   registerBtn.textContent = "Registering…";
   try {
+    const mergedConfig = {
+      ...rawConfig,
+      recipient: currentConfig.recipient,
+      amount: currentConfig.amount,
+      token: currentConfig.token,
+    };
     const res = await fetch(`${MONITOR_URL}/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        config: rawConfig,
+        config: mergedConfig,
         ownerAddress: isDemoMode ? "demo" : connectedAddress,
       }),
     });
