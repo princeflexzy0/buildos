@@ -137,3 +137,31 @@ tighten before anything resembling production traffic.
 Frontend + signal-monitor both deploy to Railway. Custom domain
 `buildos.tech` is live and pointed at the frontend. Push to `main` to
 redeploy both.
+## Session changelog — Guardians, Email Notifications, Branding
+
+**Trusted Guardians**
+- `guardians` field stored on agent record at registration (comma-separated names, no auth)
+- `POST /guardian-checkin/:hash` — a guardian can reset the countdown by submitting a matching name via the public status page
+- Console has a "Trusted Guardians" input; status page shows a check-in card when guardians exist
+- Trust model is intentionally soft (name-matching, not wallet auth) — see "Known gaps" below
+
+**Email Notifications (via Resend)**
+- `ownerEmail` and `beneficiaryEmail` fields added to agent config
+- `signal-monitor/notifier.js` — Resend wrapper with three branded HTML templates: warning, trigger-fired (owner), trigger-fired (beneficiary)
+- Warning emails fire automatically at 50%/75%/90% of elapsed countdown time (`checkWarningThresholds`, hooked into `autoEvaluate`)
+- Trigger-fired emails send once, to both owner and beneficiary (if set), when consensus is met
+- Domain (`buildos.tech`) verified with Resend via DKIM/SPF/DMARC DNS records
+- Requires `RESEND_API_KEY`, `SITE_URL`, `FROM_EMAIL` in `signal-monitor/.env`
+
+**Support inbox**
+- `support@buildos.tech` set up via Titan Mail (separate DNS records: A, DKIM TXT, SPF TXT, 2x MX)
+
+**Branding cleanup**
+- Replaced all logo references site-wide with a background-removed, white-flattened version (`logo-white.png`) — eliminates transparency/haze artifacts across email and web
+- Proper favicon generated from the same clean source
+- Nav and hero logo sizing increased for better visual presence
+
+**Known gaps carried forward**
+- Guardian check-in has no real auth (name-matching only)
+- Registry is still a flat JSON file, not a database
+- `/simulate/:hash` remains a demo-only endpoint — ensure it isn't exposed as a way to force-trigger someone else's agent early
