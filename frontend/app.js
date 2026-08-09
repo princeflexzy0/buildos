@@ -138,7 +138,7 @@ function renderCompiledConfigForReview() {
         <label>Escrow Balance</label>
         <span id="balanceValue">—</span>
       </div>
-      <div class="config-row" id="escrowRow" style="display:none">
+      <div class="config-row" id="escrowRow" style="display:none;flex-direction:column;align-items:stretch">
         <label>Escrow Lock <span style="font-weight:400;opacity:0.6;font-size:0.85em">(1% protocol fee on withdrawal)</span></label>
         <span class="amount-edit-wrap">
           <select id="escrowDurationSelect">
