@@ -8,7 +8,7 @@ const { Resend } = require("resend");
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const FROM_EMAIL = process.env.FROM_EMAIL || "BuildOS <onboarding@resend.dev>";
 const SITE_URL = process.env.SITE_URL || "https://buildos.tech";
-const LOGO_URL = `${SITE_URL}/assets/logo-final.png`;
+const LOGO_URL = `${SITE_URL}/assets/logo-email.png`;
 
 function wrapEmail({ heading, body }) {
   return `
