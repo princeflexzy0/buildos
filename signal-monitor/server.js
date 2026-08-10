@@ -17,7 +17,7 @@ const {
 } = require("./index");
 const chain = require("./chain");
 
-const PORT = process.env.MONITOR_PORT || 3002;
+const PORT = process.env.PORT || process.env.MONITOR_PORT || 3002;
 const TICK_INTERVAL_MS = 10000;
 
 function setCors(res) {
