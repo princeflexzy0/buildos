@@ -106,7 +106,8 @@ function normalizeConfig(raw) {
   const amountMatch = (action.description || raw.description || "").match(/([\d.]+)\s*(OKB|USDT|USDC)/i);
   const amount = amountMatch ? amountMatch[1] : null;
   const token = amountMatch ? amountMatch[2].toUpperCase() : null;
-  const addrMatch = (raw.inputDescription || "").match(/0x[a-fA-F0-9]{40}/);
+  // Only match exactly 40-hex-char addresses (20 bytes) — not tx hashes (64 chars)
+  const addrMatch = (raw.inputDescription || "").match(/0x[a-fA-F0-9]{40}(?![a-fA-F0-9])/);
   const recipient = addrMatch ? addrMatch[0] : null;
   return {
     label: raw.label || raw.agentType || "Agent",
