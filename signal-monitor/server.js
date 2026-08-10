@@ -1,6 +1,7 @@
 const http = require("http");
 const { issueToken, verifyToken } = require("./magiclink");
 const { verifySignature, isRegisteredGuardian } = require("./walletsig");
+const notifier = require("./notifier");
 const {
   registerAgent,
   getAgent,
