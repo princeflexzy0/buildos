@@ -323,7 +323,7 @@ const server = http.createServer(async (req, res) => {
         }
       }, 130000); // 2min 10sec
       // 4. Send claim email to recipient
-      const claimUrl = \`\${process.env.SITE_URL || "https://buildos.tech"}/claim.html#\${depositId}\`;
+      const claimUrl = `\${process.env.SITE_URL || "https://buildos.tech"}/claim.html#\${depositId}`;
       if (recipientEmail) {
         await notifier.sendTriggerFiredBeneficiaryEmail({
           to: recipientEmail,
@@ -338,7 +338,7 @@ const server = http.createServer(async (req, res) => {
         await notifier.sendTriggerFiredOwnerEmail({
           to: ownerEmail,
           label: config.label || "BuildOS Agent",
-          statusUrl: \`\${process.env.SITE_URL || "https://buildos.tech"}/console.html\`,
+          statusUrl: `\${process.env.SITE_URL || "https://buildos.tech"}/console.html`,
         }).catch(e => console.warn("[email] owner notify failed:", e.message));
       }
       res.writeHead(200, { "Content-Type": "application/json" });
