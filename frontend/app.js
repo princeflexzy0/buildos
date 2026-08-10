@@ -502,21 +502,20 @@ commitBtn?.addEventListener("click", async () => {
         || (30 * 86400);
       const unlockAt = Math.floor(Date.now() / 1000) + triggerSeconds;
       const unlockPadded = unlockAt.toString(16).padStart(64, "0");
-      const depositData = "0x02279b4a" + recipientPadded + unlockPadded;
-
-      const txHash = await window.activeProvider.request({
-        method: "eth_sendTransaction",
-        params: [{ 
-          from: connectedAddress, 
-          to: escrowAddr,
-          value: valueHex,
-          data: depositData,
-        }],
-      });
-      await fetch(`${MONITOR_URL}/record-tx/${currentConfig.configHash}`, {
+      // Use ethers ABI — fixes InvalidUnlockTime + wrong recipient bug
+      const browserProvider = new ethers.BrowserProvider(window.activeProvider);
+      const signer = await browserProvider.getSigner();
+      const safeUnlockAt = Math.floor(Date.now() / 1000) + Math.max(triggerSeconds, 120);
+      const { txHash, depositId: escrowDepositId } = await depositNativeEscrow(
+        signer,
+        currentConfig.recipient,
+        currentConfig.amount,
+        safeUnlockAt
+      );
+      await fetch(`${MONITOR_URL}/record-deposit/${currentConfig.configHash}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ txHash, from: connectedAddress, escrow: escrowAddr }),
+        body: JSON.stringify({ depositId: escrowDepositId, txHash, recipient: currentConfig.recipient, amount: currentConfig.amount, unlockAt: safeUnlockAt }),
       }).catch(() => {});
 
       // Get deposit ID from tx receipt logs
