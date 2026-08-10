@@ -476,10 +476,10 @@ commitBtn?.addEventListener("click", async () => {
           throw new Error(`Insufficient OKB for gas. You need at least 0.0005 OKB to cover transaction fees.`);
         }
       }
-      // Step 1: Register agent with monitor (same as demo)
-      const regRes = await fetch(`${MONITOR_URL}/commit-onchain/${currentConfig.configHash}`, { method: "POST" });
-      const regData = await regRes.json();
-      if (!regData.success) throw new Error(regData.error || "agent registration failed");
+      // Step 1: Register with monitor only (skip AgentFactory onchain tx)
+      await fetch(`${MONITOR_URL}/register`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(currentConfig) }).catch(() => {});
+
+
 
       // Step 2: Deposit funds to EscrowVault if amount specified
       const cfg = window.BUILDOS_CONFIG || {};
