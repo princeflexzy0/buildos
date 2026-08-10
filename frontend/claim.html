@@ -65,7 +65,7 @@ const ESCROW_ABI_MIN = [
 ];
 
 const params = new URLSearchParams(location.search);
-const depositId = params.get("depositId");
+const depositId = params.get("depositId") || window.location.hash.replace("#","") || null;
 let deposit = null;
 let connectedAddr = null;
 
