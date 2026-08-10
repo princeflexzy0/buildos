@@ -478,7 +478,11 @@ async function refreshAgents() {
   try {
     // Filter by wallet in real mode, show demo agents in demo mode
     const ownerParam = isDemoMode ? "demo" : (connectedAddress || "");
-    const url = ownerParam ? `${MONITOR_URL}/status?owner=${ownerParam}` : `${MONITOR_URL}/status`;
+    if (!ownerParam) {
+      renderAgents([]);
+      return;
+    }
+    const url = `${MONITOR_URL}/status?owner=${ownerParam}`;
     const res = await fetch(url);
     const data = await res.json();
     if (!data.success || !data.agents?.length) {
@@ -546,7 +550,11 @@ window.onWalletConnect = (address) => {
 
 refreshBtn?.addEventListener("click", refreshAgents);
 checkHealth();
-refreshAgents();
+// Wait for wallet auto-reconnect before first refresh
+// wallet.js fires this event after auto-reconnect completes
+window.addEventListener("buildos:wallet:ready", () => refreshAgents());
+// Fallback: if no wallet, still load after 1s (demo mode etc)
+setTimeout(() => { if (typeof refreshAgents === "function") refreshAgents(); }, 1000);
 setInterval(refreshAgents, 8000);
 setInterval(checkHealth, 15000);
 

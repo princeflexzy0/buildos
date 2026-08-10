@@ -62,6 +62,7 @@ async function connectWith(providerKey) {
     localStorage.setItem("buildos_wallet_provider", providerKey);
     updateWalletUI(connectedAddress);
     closeWalletModal();
+    window.dispatchEvent(new Event("buildos:wallet:ready"));
     return connectedAddress;
   } catch (err) {
     console.error("Wallet connect failed:", err);
@@ -136,8 +137,8 @@ function toggleMobileMenu() {
       updateWalletUI(connectedAddress);
     });
     updateWalletUI(connectedAddress);
-    // Reload agent list for this wallet
-    if (typeof loadAgents === "function") loadAgents();
+    // Signal app.js that wallet is ready so it loads the right agents
+    window.dispatchEvent(new Event("buildos:wallet:ready"));
   } catch (e) {
     console.warn("[wallet] auto-reconnect failed:", e.message);
   }
