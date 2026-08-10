@@ -1541,8 +1541,7 @@
           "stateMutability": "nonpayable",
           "type": "function"
         }
-      ],
-      "deployedAt": "2026-08-08T18:47:57.342Z"
+      ]
     }
   }
 }

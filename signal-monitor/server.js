@@ -314,6 +314,41 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // POST /claim/:depositId - backend releases escrow to recipient (no wallet needed)
+  if (req.method === "POST" && parts[0] === "claim" && parts[1]) {
+    const depositId = parts[1];
+    try {
+      // Check deposit exists and is unlocked
+      const deposit = await chain.getEscrowDeposit(depositId);
+      if (deposit.released) {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ success: true, already: true, message: "Already claimed" }));
+      }
+      if (deposit.refunded) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ error: "Deposit was refunded to sender" }));
+      }
+      const now = Math.floor(Date.now() / 1000);
+      if (now < Number(deposit.unlockAt)) {
+        const secsLeft = Number(deposit.unlockAt) - now;
+        res.writeHead(400, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ error: "Not yet unlocked", secsLeft }));
+      }
+      // Release funds to recipient
+      const { txHash } = await chain.releaseEscrow(depositId);
+      res.writeHead(200, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ 
+        success: true, 
+        txHash,
+        recipient: deposit.recipient,
+        amount: deposit.amount
+      }));
+    } catch (err) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
   res.writeHead(404, { "Content-Type": "application/json" });
   res.end(JSON.stringify({ error: "Not found" }));
 });
