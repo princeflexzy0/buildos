@@ -191,7 +191,7 @@ function renderCompiledConfigForReview() {
         <label>Escrow Balance</label>
         <span id="balanceValue">—</span>
       </div>
-      <div class="config-row" id="escrowRow" style="display:none;flex-direction:column;align-items:stretch">
+      // escrowRow removed
         <label>Escrow Lock <span style="font-weight:400;opacity:0.6;font-size:0.85em">(1% protocol fee on withdrawal)</span></label>
         <span class="amount-edit-wrap">
           <select id="escrowDurationSelect">
@@ -257,7 +257,7 @@ function renderCompiledConfigForReview() {
     currentConfig.token = e.target.value;
     if (addrValid) estimateAndShowGas(currentConfig);
   });
-  document.getElementById("depositEscrowBtn")?.addEventListener("click", handleEscrowDeposit);
+      // depositEscrowBtn removed
   document.getElementById("draftLetterBtn")?.addEventListener("click", handleDraftLetter);
   document.getElementById("saveLetterBtn")?.addEventListener("click", handleSaveLetter);
   document.getElementById("copyStatusLinkBtn")?.addEventListener("click", handleCopyStatusLink);
@@ -400,7 +400,7 @@ registerBtn?.addEventListener("click", async () => {
     await refreshAgents();
     refreshAgentBalance(currentConfig.configHash);
     const escrowRow = document.getElementById("escrowRow");
-    if (escrowRow) escrowRow.style.display = "flex";
+      // escrowRow removed
     const letterRow = document.getElementById("letterRow");
     if (letterRow) letterRow.style.display = "flex";
     const shareStatusRow = document.getElementById("shareStatusRow");
