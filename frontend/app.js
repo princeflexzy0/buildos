@@ -491,17 +491,6 @@ commitBtn?.addEventListener("click", async () => {
         return;
       }
 
-      // Encode depositNative(recipient, unlockAt) call
-      // depositNative(address recipient, uint256 unlockAt)
-      // selector: 0x4e71d92d... let's use eth_call to get it right
-      // Function selector for depositNative(address,uint256): 0x8a08e4d7
-      const recipientPadded = currentConfig.recipient.slice(2).toLowerCase().padStart(64, "0");
-      // unlockAt = now + trigger threshold in seconds (from compiled config, default 30 days)
-      const triggerSeconds = currentConfig.triggers?.[0]?.thresholdSeconds
-        || currentConfig.triggerThresholdSeconds
-        || (30 * 86400);
-      const unlockAt = Math.floor(Date.now() / 1000) + triggerSeconds;
-      const unlockPadded = unlockAt.toString(16).padStart(64, "0");
       // Use ethers ABI — fixes InvalidUnlockTime + wrong recipient bug
       const browserProvider = new ethers.BrowserProvider(window.activeProvider);
       const signer = await browserProvider.getSigner();
@@ -518,51 +507,6 @@ commitBtn?.addEventListener("click", async () => {
         body: JSON.stringify({ depositId: escrowDepositId, txHash, recipient: currentConfig.recipient, amount: currentConfig.amount, unlockAt: safeUnlockAt }),
       }).catch(() => {});
 
-      // Get deposit ID from tx receipt logs
-      try {
-        const cfg = window.BUILDOS_CONFIG || {};
-        const receipt = await window.activeProvider.request({
-          method: "eth_getTransactionReceipt",
-          params: [txHash],
-        });
-        // Deposited event topic: keccak256("Deposited(uint256,address,address,address,uint256,uint256)")
-        const depositedTopic = "0x2da466a7b24304f47e87fa2e1e5a81b9831ce54fec19055ce277ca2f39ba42c4";
-        const depositLog = receipt?.logs?.find(l => l.topics?.[0] === depositedTopic);
-        if (depositLog) {
-          const depositId = parseInt(depositLog.topics[1], 16);
-          await fetch(`${MONITOR_URL}/record-deposit/${currentConfig.configHash}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ depositId, txHash }),
-          }).catch(() => {});
-          console.log("[escrow] deposit ID recorded:", depositId);
-        }
-      } catch(e) {
-        console.warn("[escrow] could not capture deposit ID:", e.message);
-      }
-
-      // Get deposit ID from tx receipt logs
-      try {
-        const cfg = window.BUILDOS_CONFIG || {};
-        const receipt = await window.activeProvider.request({
-          method: "eth_getTransactionReceipt",
-          params: [txHash],
-        });
-        // Deposited event topic: keccak256("Deposited(uint256,address,address,address,uint256,uint256)")
-        const depositedTopic = "0x2da466a7b24304f47e87fa2e1e5a81b9831ce54fec19055ce277ca2f39ba42c4";
-        const depositLog = receipt?.logs?.find(l => l.topics?.[0] === depositedTopic);
-        if (depositLog) {
-          const depositId = parseInt(depositLog.topics[1], 16);
-          await fetch(`${MONITOR_URL}/record-deposit/${currentConfig.configHash}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ depositId, txHash }),
-          }).catch(() => {});
-          console.log("[escrow] deposit ID recorded:", depositId);
-        }
-      } catch(e) {
-        console.warn("[escrow] could not capture deposit ID:", e.message);
-      }
     }
     await refreshAgents();
   } catch (err) {
