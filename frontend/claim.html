@@ -40,8 +40,7 @@
       <p style="color:#888;margin:0 0 24px;font-size:0.95em">Connect the recipient wallet to withdraw funds from escrow.</p>
 
       <div id="connectSection">
-        <input id="addrInput" type="text" placeholder="Paste your wallet address (0x...)" style="width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;font-size:14px;margin-bottom:10px;box-sizing:border-box;">
-        <button class="btn-claim" id="connectBtn" onclick="connectAndLoad()">View &amp; Claim Funds</button>
+        <button class="btn-claim" id="connectBtn" onclick="connectAndLoad()">Connect Wallet &amp; Withdraw</button>
       </div>
 
       <div id="depositSection" style="display:none">
@@ -71,18 +70,22 @@ let deposit = null;
 let connectedAddr = null;
 
 async function connectAndLoad() {
-  if (!depositId) {
-    showStatus("error", "No deposit ID in URL. Check the link you received.");
-    document.getElementById("depositSection").style.display = "block";
+  // Connect wallet then withdraw
+  const pick = confirm("Which wallet?\n\nOK = OKX Wallet\nCancel = MetaMask");
+  const walletType = pick ? "okx" : "metamask";
+  const provider = walletType === "okx" ? window.okxwallet : window.ethereum;
+  if (!provider) { alert("Wallet not found. Install OKX Wallet or MetaMask."); return; }
+  const accounts = await provider.request({ method: "eth_requestAccounts" });
+  connectedAddr = accounts[0];
+  await doWithdraw();
+}
+
+async function autoLoadDeposit() {
+  if (!depositId && depositId !== 0) {
+    showStatus("error", "No deposit ID in URL. Use the link you received.");
     return;
   }
-  const input = document.getElementById("addrInput").value.trim();
-  if (!input || !input.startsWith("0x") || input.length !== 42) {
-    alert("Please paste a valid wallet address (0x... 42 characters).");
-    return;
-  }
-  connectedAddr = input.toLowerCase();
-  document.getElementById("connectSection").style.display = "none";
+  document.getElementById("connectSection").style.display = "block";
   document.getElementById("depositSection").style.display = "block";
   await loadDeposit();
 }
@@ -191,6 +194,6 @@ function showStatus(type, msg) {
   el.className = "claim-status " + type;
   el.textContent = msg;
 }
+// Auto-load deposit info when page loads
+window.addEventListener("DOMContentLoaded", autoLoadDeposit);
 </script>
-</body>
-</html>
