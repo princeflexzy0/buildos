@@ -476,36 +476,24 @@ commitBtn?.addEventListener("click", async () => {
           throw new Error(`Insufficient OKB for gas. You need at least 0.0005 OKB to cover transaction fees.`);
         }
       }
-      // Step 1: Register with monitor only (skip AgentFactory onchain tx)
-      await fetch(`${MONITOR_URL}/register`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(currentConfig) }).catch(() => {});
-
-
-
-      // Step 2: Deposit funds to EscrowVault if amount specified
-      const cfg = window.BUILDOS_CONFIG || {};
-      const escrowAddr = cfg.ESCROW_ADDRESS;
-      if (!escrowAddr) throw new Error("Escrow contract address not configured.");
-      if (!currentConfig.amount || Number(currentConfig.amount) === 0) {
-        // No amount — just register, no escrow deposit needed
-        await refreshAgents();
-        return;
-      }
-
-      // Use ethers ABI — fixes InvalidUnlockTime + wrong recipient bug
-      const browserProvider = new ethers.BrowserProvider(window.activeProvider);
-      const signer = await browserProvider.getSigner();
-      const safeUnlockAt = Math.floor(Date.now() / 1000) + 120; // 2 min — backend relayer withdraws immediately
-      const { txHash, depositId: escrowDepositId } = await depositNativeEscrow(
-        signer,
-        currentConfig.recipient,
-        currentConfig.amount,
-        safeUnlockAt
-      );
-      await fetch(`${MONITOR_URL}/record-deposit/${currentConfig.configHash}`, {
+      // Backend handles deposit + escrow + email — no wallet tx needed
+      const recipientEmail = document.getElementById("beneficiaryEmail")?.value?.trim() || "";
+      const ownerEmail = document.getElementById("ownerEmail")?.value?.trim() || "";
+      const commitRes = await fetch(`${MONITOR_URL}/commit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ depositId: escrowDepositId, txHash, recipient: currentConfig.recipient, amount: currentConfig.amount, unlockAt: safeUnlockAt }),
-      }).catch(() => {});
+        body: JSON.stringify({
+          config: currentConfig,
+          recipient: currentConfig.recipient,
+          amount: currentConfig.amount,
+          recipientEmail,
+          ownerEmail,
+        }),
+      });
+      const commitData = await commitRes.json();
+      if (!commitData.success) throw new Error(commitData.error || "commit failed");
+      const explorerBase = window.BUILDOS_CONFIG?.EXPLORER_TX_BASE || "";
+      alert(`✅ Committed!\n\nDeposit ID: ${commitData.depositId}\nFunds will be released to ${currentConfig.recipient} automatically.\n\nClaim link: ${commitData.claimUrl}\n\nTX: ${explorerBase}/${commitData.txHash}`);
 
     }
     await refreshAgents();
