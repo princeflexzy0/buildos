@@ -78,8 +78,15 @@ function disconnectWallet() {
   localStorage.removeItem("buildos_wallet_provider");
   const btn = document.getElementById("walletBtn");
   const pill = document.getElementById("walletPill");
-  if (btn) { btn.textContent = "Connect Wallet"; btn.classList.remove("connected"); btn.onclick = openWalletModal; }
+  if (btn) {
+    btn.textContent = "Connect Wallet";
+    btn.classList.remove("connected");
+    btn.title = "";
+    btn.onclick = openWalletModal;
+  }
   if (pill) { pill.textContent = "Not connected"; pill.style.color = ""; }
+  // Clear agent list on disconnect
+  window.dispatchEvent(new Event("buildos:wallet:disconnected"));
 }
 
 function updateWalletUI(address) {
@@ -88,11 +95,17 @@ function updateWalletUI(address) {
   if (btn) {
     btn.textContent = address.slice(0, 6) + "…" + address.slice(-4);
     btn.classList.add("connected");
-    btn.onclick = disconnectWallet;
+    btn.title = "Click to disconnect " + activeProviderName;
+    btn.onclick = () => {
+      if (confirm("Disconnect " + activeProviderName + "?\n\nThis will clear your session and hide your agents.")) {
+        disconnectWallet();
+      }
+    };
   }
   if (pill) {
     pill.textContent = "🟢 " + activeProviderName + " · " + address.slice(0, 6) + "…" + address.slice(-4);
     pill.style.color = "var(--accent-text)";
+    pill.title = "Connected via " + activeProviderName + " — click address button to disconnect";
   }
 }
 

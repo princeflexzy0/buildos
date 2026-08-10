@@ -278,11 +278,19 @@ compileBtn?.addEventListener("click", async () => {
     const data = await res.json();
     if (!data.success) throw new Error(data.error || "compile failed");
     rawConfig = data.config;
+    const prevRecipient = currentConfig?.recipient || "";
     currentConfig = normalizeConfig(rawConfig);
     // Override with manually entered amount/token if provided
     if (manualAmount && !isNaN(Number(manualAmount))) {
       currentConfig.amount = manualAmount;
       currentConfig.token = manualToken;
+    }
+    // Preserve user-typed recipient — don't let compiler overwrite it
+    const recipientField = document.getElementById("recipientInput");
+    if (recipientField && recipientField.value.trim()) {
+      currentConfig.recipient = recipientField.value.trim();
+    } else if (prevRecipient) {
+      currentConfig.recipient = prevRecipient;
     }
     renderCompiledConfigForReview();
     registerBtn.disabled = false;
@@ -566,6 +574,11 @@ window.onWalletConnect = (address) => {
 
 refreshBtn?.addEventListener("click", refreshAgents);
 checkHealth();
+// Clear agent list on disconnect
+window.addEventListener("buildos:wallet:disconnected", () => {
+  if (typeof renderAgents === "function") renderAgents([]);
+});
+
 // Wait for wallet auto-reconnect before first refresh
 // wallet.js fires this event after auto-reconnect completes
 window.addEventListener("buildos:wallet:ready", () => refreshAgents());
