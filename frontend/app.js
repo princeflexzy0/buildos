@@ -561,6 +561,13 @@ function renderAgent(agent) {
       </div>
       ${committed ? `<div class="agent-balance" id="balance-${agent.configHash}">balance: loading…</div>` : ""}
       <div class="agent-last-checkin" id="checkin-${agent.configHash}">last check-in: ${agent.lastCheckin ? new Date(agent.lastCheckin * 1000).toLocaleTimeString() : "never"}</div>
+      ${agent.escrowDepositId != null ? `
+        <div class="agent-escrow-status" style="margin:6px 0;padding:8px 12px;border-radius:8px;font-size:0.85em;${agent.claimClaimed ? 'background:#e8f5e9;color:#2d6a4f;border:1px solid #a5d6a7' : 'background:#fff8e1;color:#a67c00;border:1px solid #f0e080'}">
+          ${agent.claimClaimed
+            ? `✅ Funds claimed · <strong>${agent.escrowAmount} OKB</strong> released to recipient`
+            : `⏳ <strong>${agent.escrowAmount} OKB</strong> sitting in escrow · <a href="/claim.html?depositId=${agent.escrowDepositId}" target="_blank" style="color:#a67c00;font-weight:600">Claim link ↗</a>`
+          }
+        </div>` : ""}
       <div class="agent-escrow-countdown" id="escrow-countdown-${agent.configHash}" style="display:none"></div>
       <div class="agent-actions">
         <button class="btn-small" onclick="doCheckin('${agent.configHash}')">Check In</button>

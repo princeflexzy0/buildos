@@ -10,6 +10,7 @@ contract EscrowVault {
     address public constant NATIVE = address(0);
     uint256 public constant FEE_BPS = 100; // 1% protocol fee, in basis points (100 = 1%)
     address public immutable feeRecipient;
+    address public relayer;
 
     struct Deposit {
         address depositor;
@@ -35,6 +36,7 @@ contract EscrowVault {
     error NotYetUnlocked();
     error AlreadySettled();
     error NotRecipient();
+    error NotRelayer();
     error NotDepositor();
     error GracePeriodNotReached();
     error NativeTransferFailed();
@@ -45,6 +47,13 @@ contract EscrowVault {
     constructor(address _feeRecipient) {
         if (_feeRecipient == address(0)) revert InvalidFeeRecipient();
         feeRecipient = _feeRecipient;
+        relayer = msg.sender;
+    }
+
+    function setRelayer(address _relayer) external {
+        if (msg.sender != relayer) revert NotRelayer();
+        if (_relayer == address(0)) revert InvalidRecipient();
+        relayer = _relayer;
     }
 
     function depositNative(address recipient, uint256 unlockAt) external payable returns (uint256 id) {
@@ -88,6 +97,26 @@ contract EscrowVault {
         _payOut(d.token, msg.sender, payout);
 
         emit Withdrawn(id, msg.sender, payout, fee);
+    }
+
+    // Relayer-authorized withdrawal — pays out ONLY to the recipient address
+    // that was locked in at deposit time. The relayer cannot redirect funds
+    // to any other address; it can only trigger payout to d.recipient.
+    function withdrawFor(uint256 id) external {
+        if (msg.sender != relayer) revert NotRelayer();
+        Deposit storage d = deposits[id];
+        if (d.released || d.refunded) revert AlreadySettled();
+        if (block.timestamp < d.unlockAt) revert NotYetUnlocked();
+
+        d.released = true;
+
+        uint256 fee = (d.amount * FEE_BPS) / 10000;
+        uint256 payout = d.amount - fee;
+
+        if (fee > 0) _payOut(d.token, feeRecipient, fee);
+        _payOut(d.token, d.recipient, payout);
+
+        emit Withdrawn(id, d.recipient, payout, fee);
     }
 
     function reclaim(uint256 id) external {

@@ -155,7 +155,7 @@ module.exports = {
 };
 
 // Releases escrow to recipient when agent triggers
-// Calls EscrowVault.withdraw(depositId) on behalf of the recipient
+// Calls EscrowVault.withdrawFor(depositId) — relayer-authorized, pays out to d.recipient locked at deposit time
 async function releaseEscrow(depositId) {
   const deployment = loadDeployment();
   const { wallet } = getProviderAndWallet();
@@ -164,7 +164,7 @@ async function releaseEscrow(depositId) {
   const escrow = new ethers.Contract(escrowInfo.address, escrowInfo.abi, wallet);
 
   console.log(`[escrow] releasing deposit #${depositId}`);
-  const tx = await escrow.withdraw(depositId);
+  const tx = await escrow.withdrawFor(depositId);
   const receipt = await tx.wait();
   console.log(`[escrow] released — tx: ${receipt.hash}`);
   return { txHash: receipt.hash };

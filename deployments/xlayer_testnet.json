@@ -1096,7 +1096,7 @@
       "note": "Deployed dynamically per-agent via AgentFactory.createAgent()"
     },
     "EscrowVault": {
-      "address": "0xE6ab6b4B168af36f6bd0dAc5caC15d99aC07bAfe",
+      "address": "0xf29A19639cD0bb9A4380874E00855F17172e1978",
       "abi": [
         {
           "inputs": [
@@ -1162,6 +1162,11 @@
         {
           "inputs": [],
           "name": "NotRecipient",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "NotRelayer",
           "type": "error"
         },
         {
@@ -1510,6 +1515,32 @@
           "type": "function"
         },
         {
+          "inputs": [],
+          "name": "relayer",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "_relayer",
+              "type": "address"
+            }
+          ],
+          "name": "setRelayer",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
           "inputs": [
             {
               "internalType": "uint256",
@@ -1540,8 +1571,22 @@
           "outputs": [],
           "stateMutability": "nonpayable",
           "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            }
+          ],
+          "name": "withdrawFor",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
         }
-      ]
+      ],
+      "deployedAt": "2026-08-10T16:35:44.437Z"
     }
   }
 }

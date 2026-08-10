@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>How it Works BuildOS</title>
-<link rel="icon" href="assets/favicon.png">
+<link rel="icon" href="assets/logo-full.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1786218938">
+<link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="legal.css">
 </head>
 <body>
@@ -124,97 +124,9 @@
     </ul>
   </div>
 </section>
-
-<section class="page-hero" style="padding-top:8px">
-  <span class="section-tag">Fund Safety</span>
-  <h2>Your funds sit in a contract. Not in our wallet.</h2>
-  <p class="page-sub">Agents with a payout can lock the amount in a non-custodial escrow contract until the trigger fires. Nobody — including BuildOS — can move it early.</p>
-</section>
-<section class="pipeline-standalone">
-  <div class="pipeline-step-lg">
-    <span class="step-num">A</span>
-    <h3>Deposit</h3>
-    <p>When you register an agent with a payout, you choose a lock duration and send the amount straight to the <strong>EscrowVault</strong> smart contract — not to a BuildOS wallet.</p>
-    <div class="how-example">
-      <span class="how-example-label">Who holds it</span>
-      <span class="how-example-text">The contract address. No admin key, no owner override, no way for BuildOS to withdraw early.</span>
-    </div>
-  </div>
-  <div class="pipeline-step-lg">
-    <span class="step-num">B</span>
-    <h3>Locked</h3>
-    <p>Funds are unreachable until the unlock time passes. Every deposit is verifiable on the X Layer explorer, deposit ID and all.</p>
-    <div class="how-example">
-      <span class="how-example-label">Fee</span>
-      <span class="how-example-text">A 1% protocol fee is taken on withdrawal — shown upfront, same for everyone, written into the contract.</span>
-    </div>
-  </div>
-  <div class="pipeline-step-lg">
-    <span class="step-num">C</span>
-    <h3>Auto-unlocks</h3>
-    <p>Once the unlock time passes, the recipient withdraws directly from the contract. If it's never claimed, the depositor can reclaim it after a 90-day grace period so funds are never stranded.</p>
-    <div class="how-example">
-      <span class="how-example-label">Verify it yourself</span>
-      <span class="how-example-text">View the escrow contract on the X Layer explorer — every deposit, unlock time, and withdrawal is public.</span>
-    </div>
-  </div>
-</section>
-<div style="text-align:center;margin:-24px 0 48px">
-  <a href="https://www.okx.com/web3/explorer/xlayer-test/address/0xE6ab6b4B168af36f6bd0dAc5caC15d99aC07bAfe" target="_blank" class="btn btn-outline">View Escrow Contract on Explorer ↗</a>
-</div>
-
-<section style="background:var(--surface-2,#f5f5f0);padding:64px 0;margin:0">
-  <div class="section-inner" style="max-width:860px;margin:0 auto;padding:0 24px">
-    <span class="section-tag">Guardian System</span>
-    <h2 style="font-size:2em;margin:12px 0 8px">Trusted Guardians.<br>Multi-sig confirmation.</h2>
-    <p style="color:var(--text-2);max-width:600px;margin-bottom:40px;line-height:1.7">
-      Add trusted people who can vouch for you. Set a threshold — e.g. 2 of 3 must confirm —
-      and the countdown only resets when enough guardians check in.
-    </p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px">
-      <div style="background:#fff;border:1px solid #e5e5e0;border-radius:14px;padding:24px">
-        <div style="font-size:1.5em;margin-bottom:10px">📧</div>
-        <h3 style="margin:0 0 8px;font-size:1em">Magic-link email</h3>
-        <p style="color:var(--text-2);font-size:0.9em;line-height:1.6;margin:0">
-          Guardians get a unique single-use link by email. Only clicking that link confirms — knowing the name alone is not enough.
-        </p>
-      </div>
-      <div style="background:#fff;border:1px solid #e5e5e0;border-radius:14px;padding:24px">
-        <div style="font-size:1.5em;margin-bottom:10px">🔐</div>
-        <h3 style="margin:0 0 8px;font-size:1em">Wallet signature</h3>
-        <p style="color:var(--text-2);font-size:0.9em;line-height:1.6;margin:0">
-          Guardians with an Ethereum wallet sign a message. Verified server-side via cryptographic proof — no password needed.
-        </p>
-      </div>
-      <div style="background:#fff;border:1px solid #e5e5e0;border-radius:14px;padding:24px">
-        <div style="font-size:1.5em;margin-bottom:10px">✅</div>
-        <h3 style="margin:0 0 8px;font-size:1em">M-of-N consensus</h3>
-        <p style="color:var(--text-2);font-size:0.9em;line-height:1.6;margin:0">
-          Set a threshold: 2 of 3, 3 of 5. The status page shows live progress ("2 of 3 confirmed") and resets only when threshold is met.
-        </p>
-      </div>
-      <div style="background:#fff;border:1px solid #e5e5e0;border-radius:14px;padding:24px">
-        <div style="font-size:1.5em;margin-bottom:10px">🔔</div>
-        <h3 style="margin:0 0 8px;font-size:1em">Email notifications</h3>
-        <p style="color:var(--text-2);font-size:0.9em;line-height:1.6;margin:0">
-          Warning emails at 50%, 75%, and 90% of elapsed countdown. Owner and beneficiary notified when agent fires.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section class="page-section">
   <h2 style="text-align:center;margin-bottom:32px">Frequently asked</h2>
   <div class="faq-grid">
-    <div class="faq-item">
-      <h4>Can I add guardians?</h4>
-      <p>Yes. Add trusted people with their name and email or wallet address. Set a threshold (e.g. 2 of 3) — the countdown resets only when enough confirm. Guardians authenticate via magic-link email or wallet signature.</p>
-    </div>
-    <div class="faq-item">
-      <h4>What if a guardian doesn't respond?</h4>
-      <p>The countdown keeps running. If the threshold isn't met before the timer expires, the agent fires as configured. Guardians are a safety net against false triggers, not a veto.</p>
-    </div>
     <div class="faq-item">
       <h4>Do I need to enter an amount?</h4>
       <p>Yes for real commits. Include it in your description ("5 OKB") or type it in the amount field above Compile. Demo mode works without it.</p>
@@ -238,14 +150,6 @@
     <div class="faq-item">
       <h4>What tokens are supported?</h4>
       <p>OKB, USDT, and USDC on X Layer testnet. Mainnet support is on the roadmap.</p>
-    </div>
-    <div class="faq-item">
-      <h4>Does escrow charge a fee?</h4>
-      <p>Yes — a 1% protocol fee is taken on withdrawal, written directly into the contract. It's the same for every deposit and visible on-chain, not something BuildOS can change after the fact.</p>
-    </div>
-    <div class="faq-item">
-      <h4>What if the recipient never claims it?</h4>
-      <p>After the unlock time, the recipient has an open window to withdraw. If it's never claimed within 90 days of unlock, the original depositor can reclaim the funds instead, so nothing is stranded forever.</p>
     </div>
   </div>
 </section>

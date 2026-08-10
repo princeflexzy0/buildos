@@ -315,6 +315,7 @@ const server = http.createServer(async (req, res) => {
       state.escrowTxHash = txHash;
       state.escrowRecipient = recipient;
       state.escrowAmount = amount;
+      state.escrowUnlockAt = unlockAt;
       state.claimCode = claimCode;
       state.claimClaimed = false;
       state.beneficiaryLetter = config.beneficiaryLetter || null;
@@ -322,14 +323,22 @@ const server = http.createServer(async (req, res) => {
       // 3. Wait 2 min then auto-release (fire and forget)
       setTimeout(async () => {
         try {
+          // Re-check state — may have already been claimed via /claim endpoint
+          const agents = listAgents();
+          const agent = Object.values(agents).find(a => String(a.escrowDepositId) === String(depositId));
+          if (agent?.claimClaimed) {
+            console.log(`[auto-release] deposit ${depositId} already claimed — skipping`);
+            return;
+          }
           await chain.releaseEscrow(depositId);
+          if (agent) { agent.claimClaimed = true; saveToDisk(); }
           console.log(`[auto-release] deposit ${depositId} released`);
         } catch(e) {
           console.error(`[auto-release] failed:`, e.message);
         }
       }, 130000); // 2min 10sec
       // 4. Send claim email to recipient
-      const claimUrl = `${process.env.SITE_URL || "https://buildos.tech"}/claim.html#${depositId}`;
+      const claimUrl = `${process.env.SITE_URL || "https://buildos.tech"}/claim.html?depositId=${depositId}`;
       if (recipientEmail) {
         await notifier.sendTriggerFiredBeneficiaryEmail({
           to: recipientEmail,
@@ -397,6 +406,9 @@ const server = http.createServer(async (req, res) => {
       letter: agent.beneficiaryLetter || null,
       claimed: agent.claimClaimed || false,
       hasCode: !!agent.claimCode,
+      unlockAt: agent.escrowUnlockAt || null,
+      recipient: agent.escrowRecipient || null,
+      txHash: agent.escrowTxHash || null,
     }));
   }
 

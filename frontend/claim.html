@@ -49,7 +49,7 @@
 <script>
 const MONITOR = window.BUILDOS_CONFIG?.MONITOR_URL || "https://signal-monitor-production-a2b9.up.railway.app";
 const params = new URLSearchParams(location.search);
-const depositId = params.get("depositId") || window.location.hash.replace("#","") || null;
+const depositId = params.get("depositId") || window.location.hash.replace("#","").split("?")[0] || null;
 
 function card(html) {
   document.getElementById("mainCard").innerHTML = html;
@@ -85,8 +85,32 @@ async function loadClaim() {
       return;
     }
 
+    // Show escrow locked countdown if not yet unlocked
+    const now = Math.floor(Date.now() / 1000);
+    if (data.unlockAt && data.unlockAt > now) {
+      const secondsLeft = data.unlockAt - now;
+      const mins = Math.ceil(secondsLeft / 60);
+      card(`
+        <h2 style="margin:0 0 8px">Funds in Escrow</h2>
+        <div class="claim-status info">⏳ <strong>${parseFloat(data.amount).toFixed(4)} OKB</strong> is locked in escrow and will be claimable in ~${mins} minute${mins !== 1 ? "s" : ""}.</div>
+        <p style="color:#888;font-size:0.9em">This page will refresh automatically when funds unlock.</p>
+        <div id="unlockCountdown" style="font-size:1.3em;font-weight:700;text-align:center;margin:20px 0;font-family:'JetBrains Mono',monospace"></div>
+        ${data.txHash ? `<a href="https://www.okx.com/web3/explorer/xlayer-test/tx/${data.txHash}" target="_blank" class="tx-link" style="display:block">View deposit tx on explorer ↗</a>` : ""}
+      `);
+      // Live countdown
+      const el = document.getElementById("unlockCountdown");
+      const iv = setInterval(() => {
+        const left = data.unlockAt - Math.floor(Date.now() / 1000);
+        if (left <= 0) { clearInterval(iv); loadClaim(); return; }
+        const m = Math.floor(left / 60);
+        const s = left % 60;
+        if (el) el.textContent = `${m}:${String(s).padStart(2,"0")}`;
+      }, 1000);
+      return;
+    }
+
     const amountDisplay = data.amount
-      ? (Number(data.amount) / 1e18).toFixed(6) + " OKB"
+      ? (parseFloat(data.amount)).toFixed(4) + " OKB"
       : "funds";
 
     const letterHtml = data.letter
