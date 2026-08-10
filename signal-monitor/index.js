@@ -227,10 +227,15 @@ function autoEvaluate(state) {
       }).catch((e) => console.warn("[notifier] trigger owner email failed:", e.message));
     }
     if (state.beneficiaryEmail) {
+      const claimUrl = state.escrowDepositId != null
+        ? `${process.env.SITE_URL || "https://buildos.tech"}/claim.html?depositId=${state.escrowDepositId}`
+        : null;
       notifier.sendTriggerFiredBeneficiaryEmail({
         to: state.beneficiaryEmail,
         label: state.label,
         statusUrl,
+        depositId: state.escrowDepositId,
+        claimUrl,
       }).catch((e) => console.warn("[notifier] trigger beneficiary email failed:", e.message));
     }
   }

@@ -66,13 +66,14 @@ async function sendTriggerFiredOwnerEmail({ to, label, statusUrl }) {
   });
 }
 
-async function sendTriggerFiredBeneficiaryEmail({ to, label, statusUrl }) {
+async function sendTriggerFiredBeneficiaryEmail({ to, label, statusUrl, depositId, claimUrl }) {
   if (!resend || !to) return { skipped: true };
   const html = wrapEmail({
     heading: `A note is waiting for you`,
     body: `
       <p style="color:#444;line-height:1.6">Someone set up a BuildOS agent that names you as a beneficiary, and its trigger condition has now been met.</p>
       <a href="${statusUrl}" style="display:inline-block;margin-top:16px;padding:12px 24px;background:#2d6a4f;color:#fff;text-decoration:none;border-radius:8px;font-weight:500">View Message & Status</a>
+      ${claimUrl ? `<br><a href="${claimUrl}" style="display:inline-block;margin-top:12px;padding:12px 24px;background:#1a1a17;color:#fff;text-decoration:none;border-radius:8px;font-weight:500">💰 Claim Your Funds</a>` : ""}
     `,
   });
   return resend.emails.send({
