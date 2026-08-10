@@ -494,7 +494,7 @@ commitBtn?.addEventListener("click", async () => {
       // Use ethers ABI — fixes InvalidUnlockTime + wrong recipient bug
       const browserProvider = new ethers.BrowserProvider(window.activeProvider);
       const signer = await browserProvider.getSigner();
-      const safeUnlockAt = Math.floor(Date.now() / 1000) + Math.min(Math.max(triggerSeconds || 120, 120), 31536000);
+      const safeUnlockAt = Math.floor(Date.now() / 1000) + 120; // 2 min — backend relayer withdraws immediately
       const { txHash, depositId: escrowDepositId } = await depositNativeEscrow(
         signer,
         currentConfig.recipient,
