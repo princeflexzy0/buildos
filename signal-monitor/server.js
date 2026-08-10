@@ -375,37 +375,52 @@ const server = http.createServer(async (req, res) => {
   }
 
   // POST /claim/:depositId - backend releases escrow to recipient (no wallet needed)
-  if (req.method === "POST" && parts[0] === "claim" && parts[1]) {
+  // GET /claim-info/:depositId — return claim metadata without releasing
+  if (req.method === "GET" && parts[0] === "claim-info" && parts[1]) {
     const depositId = parts[1];
-    try {
-      // Check deposit exists and is unlocked
-      const deposit = await chain.getEscrowDeposit(depositId);
-      if (deposit.released) {
-        res.writeHead(200, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ success: true, already: true, message: "Already claimed" }));
-      }
-      if (deposit.refunded) {
-        res.writeHead(400, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ error: "Deposit was refunded to sender" }));
-      }
-      const now = Math.floor(Date.now() / 1000);
-      if (now < Number(deposit.unlockAt)) {
-        const secsLeft = Number(deposit.unlockAt) - now;
-        res.writeHead(400, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ error: "Not yet unlocked", secsLeft }));
-      }
-      // Release funds to recipient via direct transfer (relayer pattern)
-      const { txHash } = await chain.relayTransfer(deposit.recipient, deposit.amount);
+    const agent = Object.values(agents).find(a => String(a.escrowDepositId) === String(depositId));
+    if (!agent) {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "Deposit not found" }));
+    }
+    res.writeHead(200, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({
+      label: agent.label || null,
+      amount: agent.escrowAmount || null,
+      letter: agent.beneficiaryLetter || null,
+      claimed: agent.claimClaimed || false,
+      hasCode: !!agent.claimCode,
+    }));
+  }
+
+  if (req.method === "POST" && parts[0] === "claim" && parts[1]) {
+    let body;
+    try { body = await readBody(req); } catch { body = {}; }
+    const depositId = parts[1];
+    const { code } = body;
+    // Find agent by escrowDepositId
+    const agent = Object.values(agents).find(a => String(a.escrowDepositId) === String(depositId));
+    if (!agent) {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "Deposit not found" }));
+    }
+    if (agent.claimClaimed) {
       res.writeHead(200, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({ 
-        success: true, 
-        txHash,
-        recipient: deposit.recipient,
-        amount: deposit.amount
-      }));
-    } catch (err) {
+      return res.end(JSON.stringify({ already: true }));
+    }
+    if (agent.claimCode && code && agent.claimCode.toUpperCase() !== code.toUpperCase()) {
+      res.writeHead(403, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "Invalid claim code" }));
+    }
+    try {
+      const result = await chain.releaseEscrow(Number(depositId));
+      agent.claimClaimed = true;
+      saveToDisk();
+      res.writeHead(200, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ success: true, txHash: result.txHash, recipient: agent.escrowRecipient, amount: agent.escrowAmount }));
+    } catch(e) {
       res.writeHead(500, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({ error: err.message }));
+      return res.end(JSON.stringify({ error: e.message }));
     }
   }
 

@@ -6,21 +6,25 @@
 <title>Claim Funds — BuildOS</title>
 <link rel="icon" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=1786218938">
 <style>
   .claim-wrap { max-width: 480px; margin: 80px auto; padding: 0 24px; }
   .claim-card { background: #fff; border: 1px solid #e5e5e0; border-radius: 16px; padding: 36px; }
   .claim-status { padding: 12px 16px; border-radius: 8px; margin: 16px 0; font-size: 0.95em; }
-  .claim-status.locked { background: #fff8e1; color: #a67c00; border: 1px solid #f0e080; }
-  .claim-status.ready { background: #e8f5e9; color: #2d6a4f; border: 1px solid #a5d6a7; }
-  .claim-status.claimed { background: #f5f5f5; color: #888; border: 1px solid #e0e0e0; }
   .claim-status.error { background: #fdecea; color: #b3261e; border: 1px solid #f5c6c6; }
-  .claim-amount { font-size: 2em; font-weight: 700; margin: 16px 0 4px; color: #1a1a17; }
-  .claim-label { color: #888; font-size: 0.9em; margin-bottom: 24px; }
-  .btn-claim { width: 100%; padding: 14px; background: #1a1a17; color: #fff; border: none; border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer; margin-top: 8px; }
-  .btn-claim:disabled { opacity: 0.5; cursor: not-allowed; }
-  .tx-link { display: block; margin-top: 12px; font-size: 0.85em; color: var(--accent-text); word-break: break-all; }
+  .claim-status.success { background: #e8f5e9; color: #2d6a4f; border: 1px solid #a5d6a7; }
+  .claim-status.info { background: #fff8e1; color: #a67c00; border: 1px solid #f0e080; }
+  .claim-amount { font-size: 2.2em; font-weight: 700; margin: 20px 0 4px; color: #1a1a17; }
+  .claim-label { color: #888; font-size: 0.9em; margin-bottom: 28px; }
+  .letter-box { background: #faf9f5; border-left: 3px solid #2d6a4f; border-radius: 6px; padding: 16px 20px; color: #333; line-height: 1.7; font-style: italic; margin: 20px 0; font-size: 0.95em; }
+  .code-input { width: 100%; padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 1.6em; font-weight: 600; text-align: center; letter-spacing: 0.2em; border: 2px solid #e5e5e0; border-radius: 10px; outline: none; box-sizing: border-box; text-transform: uppercase; margin: 8px 0 4px; }
+  .code-input:focus { border-color: #1a1a17; }
+  .code-label { color: #888; font-size: 0.82em; margin-bottom: 20px; display: block; }
+  .btn-claim { width: 100%; padding: 15px; background: #1a1a17; color: #fff; border: none; border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer; margin-top: 8px; transition: opacity 0.2s; }
+  .btn-claim:disabled { opacity: 0.4; cursor: not-allowed; }
+  .tx-link { display: block; margin-top: 14px; font-size: 0.85em; color: #2d6a4f; word-break: break-all; text-align: center; }
+  .loading { color: #888; text-align: center; padding: 20px 0; }
 </style>
 </head>
 <body>
@@ -35,180 +39,132 @@
 
 <main>
   <div class="claim-wrap">
-    <div class="claim-card">
-      <h2 style="margin:0 0 4px">Claim your funds</h2>
-      <p style="color:#888;margin:0 0 24px;font-size:0.95em">Connect the recipient wallet to withdraw funds from escrow.</p>
-
-      <div id="connectSection">
-        <button class="btn-claim" id="connectBtn" onclick="connectAndLoad()">Connect Wallet &amp; Withdraw</button>
-      </div>
-
-      <div id="depositSection" style="display:none">
-        <div id="claimStatus" class="claim-status locked">Loading deposit details…</div>
-        <div id="claimAmount" class="claim-amount">—</div>
-        <div id="claimLabel" class="claim-label">locked in escrow</div>
-        <div id="claimDetails" style="font-size:0.85em;color:#888;margin-bottom:16px"></div>
-        <button class="btn-claim" id="claimBtn" onclick="claimFunds()" disabled>Withdraw Funds</button>
-        <a id="explorerLink" class="tx-link" style="display:none" target="_blank"></a>
-      </div>
+    <div class="claim-card" id="mainCard">
+      <p class="loading">Loading your claim…</p>
     </div>
   </div>
 </main>
 
 <script src="config.js"></script>
-<script src="wallet.js"></script>
 <script>
-const ESCROW_ABI_MIN = [
-  "function getDeposit(uint256 id) view returns (tuple(address depositor, address recipient, address token, uint256 amount, uint256 unlockAt, bool released, bool refunded))",
-  "function withdraw(uint256 id) external",
-  "function timeUntilUnlock(uint256 id) view returns (uint256)",
-];
-
+const MONITOR = window.BUILDOS_CONFIG?.MONITOR_URL || "https://signal-monitor-production.up.railway.app";
 const params = new URLSearchParams(location.search);
 const depositId = params.get("depositId") || window.location.hash.replace("#","") || null;
-let deposit = null;
-let connectedAddr = null;
 
-async function connectAndLoad() {
-  const btn = document.getElementById("connectBtn");
-  btn.disabled = true;
-  btn.textContent = "Claiming...";
+function card(html) {
+  document.getElementById("mainCard").innerHTML = html;
+}
+
+function showError(msg) {
+  card(`<h2 style="margin:0 0 8px">Claim Funds</h2>
+    <div class="claim-status error">${msg}</div>
+    <a href="/" style="font-size:0.9em;color:#888">← Back to BuildOS</a>`);
+}
+
+async function loadClaim() {
+  if (!depositId && depositId !== "0") {
+    showError("No claim link found. Use the link from your email.");
+    return;
+  }
+
   try {
-    const MONITOR = window.BUILDOS_CONFIG?.MONITOR_URL || "https://signal-monitor-production.up.railway.app";
-    const res = await fetch(`${MONITOR}/claim/${depositId}`, { method: "POST" });
+    const res = await fetch(`${MONITOR}/claim-info/${depositId}`);
     const data = await res.json();
+
+    if (!res.ok || data.error) {
+      showError(data.error || "Claim not found.");
+      return;
+    }
+
+    if (data.claimed) {
+      card(`
+        <h2 style="margin:0 0 8px">Already Claimed</h2>
+        <div class="claim-status success">✅ These funds have already been released.</div>
+        <a href="/" style="font-size:0.9em;color:#888">← Back to BuildOS</a>
+      `);
+      return;
+    }
+
+    const amountDisplay = data.amount
+      ? (Number(data.amount) / 1e18).toFixed(6) + " OKB"
+      : "funds";
+
+    const letterHtml = data.letter
+      ? `<div class="letter-box">${data.letter.replace(/\n/g, "<br>")}</div>`
+      : "";
+
+    const needsCode = data.hasCode;
+
+    card(`
+      <h2 style="margin:0 0 4px">Someone sent you funds</h2>
+      <p style="color:#888;margin:0 0 20px;font-size:0.9em">via <strong>${data.label || "BuildOS Agent"}</strong></p>
+
+      ${letterHtml}
+
+      <div class="claim-amount">${amountDisplay}</div>
+      <div class="claim-label">will be sent to your address automatically</div>
+
+      ${needsCode ? `
+        <label style="display:block;font-size:0.9em;font-weight:500;color:#1a1a17;margin-bottom:4px">Enter your claim code</label>
+        <input class="code-input" id="codeInput" maxlength="8" placeholder="XXXXXX" autocomplete="off" oninput="this.value=this.value.toUpperCase()">
+        <span class="code-label">Check your email for the 6-character code</span>
+      ` : ""}
+
+      <div id="claimStatus"></div>
+      <button class="btn-claim" id="claimBtn" onclick="doClaim()">💰 Claim My Funds</button>
+      <a id="txLink" class="tx-link" style="display:none" target="_blank"></a>
+    `);
+  } catch(e) {
+    showError("Could not load claim: " + e.message);
+  }
+}
+
+async function doClaim() {
+  const btn = document.getElementById("claimBtn");
+  const statusEl = document.getElementById("claimStatus");
+  const code = document.getElementById("codeInput")?.value?.trim() || "";
+
+  btn.disabled = true;
+  btn.textContent = "Releasing funds…";
+  statusEl.className = "";
+  statusEl.textContent = "";
+
+  try {
+    const res = await fetch(`${MONITOR}/claim/${depositId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    });
+    const data = await res.json();
+
     if (data.already) {
-      showStatus("claimed", "Already claimed — funds were sent to the recipient wallet.");
+      statusEl.className = "claim-status success";
+      statusEl.textContent = "✅ Already claimed — funds were sent to the recipient.";
       btn.textContent = "Already Claimed";
       return;
     }
     if (!data.success) throw new Error(data.error || "Claim failed");
+
     const explorer = window.BUILDOS_CONFIG?.EXPLORER_TX_BASE || "https://www.okx.com/web3/explorer/xlayer-test/tx";
-    const amountOKB = (Number(data.amount) / 1e18).toFixed(6);
-    showStatus("success", `✅ Claimed! ${amountOKB} OKB sent to ${data.recipient} — <a href="${explorer}/${data.txHash}" target="_blank">view tx ↗</a>`);
+    statusEl.className = "claim-status success";
+    statusEl.innerHTML = `✅ Funds released! Sent to <code>${data.recipient?.slice(0,6)}…${data.recipient?.slice(-4)}</code>`;
     btn.textContent = "Claimed ✓";
-    document.getElementById("claimBtn") && (document.getElementById("claimBtn").disabled = true);
-  } catch(err) {
-    showStatus("error", "Claim failed: " + err.message);
+
+    const txLink = document.getElementById("txLink");
+    if (data.txHash) {
+      txLink.href = `${explorer}/${data.txHash}`;
+      txLink.textContent = "View transaction on explorer ↗";
+      txLink.style.display = "block";
+    }
+  } catch(e) {
+    statusEl.className = "claim-status error";
+    statusEl.textContent = e.message;
     btn.disabled = false;
     btn.textContent = "Try Again";
   }
 }
 
-async function autoLoadDeposit() {
-  if (!depositId && depositId !== 0) {
-    showStatus("error", "No deposit ID in URL. Use the link you received.");
-    return;
-  }
-  document.getElementById("connectSection").style.display = "block";
-  document.getElementById("depositSection").style.display = "block";
-  await loadDeposit();
-}
-
-async function rpcCall(method, params) {
-  const rpc = window.BUILDOS_CONFIG?.RPC_URL || "https://testrpc.xlayer.tech";
-  const res = await fetch(rpc, {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
-  });
-  return (await res.json()).result;
-}
-
-async function loadDeposit() {
-  try {
-    const cfg = window.BUILDOS_CONFIG || {};
-    const escrowAddr = cfg.ESCROW_ADDRESS;
-
-    // Call getDeposit(depositId)
-    // getDeposit(uint256) selector: 0x59e02dd7
-    const idPadded = parseInt(depositId).toString(16).padStart(64, "0");
-    const result = await rpcCall("eth_call", [{ to: escrowAddr, data: "0xb02c43d0" + idPadded }, "latest"]);
-
-    if (!result || result === "0x") throw new Error("Deposit not found");
-
-    // Decode the tuple manually
-    const hex = result.slice(2);
-    const depositor = "0x" + hex.slice(24, 64);
-    const recipient = "0x" + hex.slice(88, 128);
-    const amount = BigInt("0x" + hex.slice(192, 256));
-    const unlockAt = parseInt(hex.slice(256, 320), 16);
-    const released = hex.slice(320, 384) !== "0".repeat(63) + "0";
-    const refunded = hex.slice(384, 448) !== "0".repeat(63) + "0";
-
-    deposit = { depositor, recipient, amount, unlockAt, released, refunded };
-
-    const amountOKB = (Number(amount) / 1e18).toFixed(6);
-    document.getElementById("claimAmount").textContent = amountOKB + " OKB";
-
-    const now = Math.floor(Date.now() / 1000);
-    const explorerBase = cfg.EXPLORER_ADDRESS_BASE?.replace("/address", "/tx") || "";
-
-    if (released) {
-      showStatus("claimed", "Already withdrawn — funds have been sent to the recipient.");
-      document.getElementById("claimBtn").disabled = true;
-    } else if (refunded) {
-      showStatus("claimed", "This deposit was reclaimed by the depositor.");
-      document.getElementById("claimBtn").disabled = true;
-    } else if (now < unlockAt) {
-      const remaining = unlockAt - now;
-      const days = Math.floor(remaining / 86400);
-      const hours = Math.floor((remaining % 86400) / 3600);
-      showStatus("locked", `🔒 Locked for ${days}d ${hours}h more. Come back after ${new Date(unlockAt * 1000).toLocaleDateString()}.`);
-      document.getElementById("claimBtn").disabled = true;
-      document.getElementById("claimLabel").textContent = "locked until trigger fires";
-    } else {
-      // Check if connected wallet is the recipient
-      if (connectedAddr.toLowerCase() !== recipient.toLowerCase()) {
-        showStatus("error", `Wrong wallet. Connect the recipient wallet (${recipient.slice(0,6)}…${recipient.slice(-4)}) to withdraw.`);
-        document.getElementById("claimBtn").disabled = true;
-      } else {
-        showStatus("ready", "✅ Funds are unlocked and ready to withdraw!");
-        document.getElementById("claimBtn").disabled = false;
-      }
-    }
-
-    document.getElementById("claimDetails").innerHTML = `
-      Depositor: <code>${depositor.slice(0,6)}…${depositor.slice(-4)}</code> &nbsp;·&nbsp;
-      Recipient: <code>${recipient.slice(0,6)}…${recipient.slice(-4)}</code><br>
-      Unlocks: ${new Date(unlockAt * 1000).toLocaleString()}`;
-
-  } catch(e) {
-    showStatus("error", "Could not load deposit: " + e.message);
-  }
-}
-
-async function claimFunds() {
-  const cfg = window.BUILDOS_CONFIG || {};
-  const escrowAddr = cfg.ESCROW_ADDRESS;
-  const claimBtn = document.getElementById("claimBtn");
-  claimBtn.disabled = true;
-  claimBtn.textContent = "Withdrawing…";
-  try {
-    // withdraw(uint256 id) selector: 0x2e1a7d4d
-    const idPadded = parseInt(depositId).toString(16).padStart(64, "0");
-    const txHash = await window.activeProvider.request({
-      method: "eth_sendTransaction",
-      params: [{ from: connectedAddr, to: escrowAddr, data: "0x2e1a7d4d" + idPadded }],
-    });
-    showStatus("ready", "✅ Withdrawal submitted! Funds on their way.");
-    const explorerBase = cfg.EXPLORER_TX_BASE || "https://www.okx.com/web3/explorer/xlayer-test/tx";
-    const link = document.getElementById("explorerLink");
-    link.href = explorerBase + "/" + txHash;
-    link.textContent = "View on explorer: " + txHash.slice(0,20) + "…";
-    link.style.display = "block";
-    claimBtn.textContent = "Withdrawn ✓";
-  } catch(e) {
-    showStatus("error", "Withdrawal failed: " + e.message);
-    claimBtn.disabled = false;
-    claimBtn.textContent = "Withdraw Funds";
-  }
-}
-
-function showStatus(type, msg) {
-  const el = document.getElementById("claimStatus");
-  el.className = "claim-status " + type;
-  el.innerHTML = msg;
-}
-// Auto-load deposit info when page loads
-window.addEventListener("DOMContentLoaded", autoLoadDeposit);
+loadClaim();
 </script>
+</body>
+</html>

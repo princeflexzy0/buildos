@@ -66,27 +66,33 @@ async function sendTriggerFiredOwnerEmail({ to, label, statusUrl }) {
   });
 }
 
-async function sendTriggerFiredBeneficiaryEmail({ to, label, statusUrl, depositId, claimUrl, letter }) {
+async function sendTriggerFiredBeneficiaryEmail({ to, label, statusUrl, depositId, claimUrl, letter, claimCode }) {
   if (!resend || !to) return { skipped: true };
   const letterBlock = letter
     ? `<div style="margin:20px 0;padding:16px 20px;background:#faf9f5;border-left:3px solid #2d6a4f;border-radius:4px;color:#333;line-height:1.7;font-style:italic">${letter.replace(/\n/g, "<br>")}</div>`
+    : "";
+  const codeBlock = claimCode
+    ? `<div style="margin:24px 0;text-align:center">
+        <p style="color:#888;font-size:0.85em;margin:0 0 8px">Your claim code</p>
+        <div style="display:inline-block;padding:12px 32px;background:#1a1a17;color:#fff;font-family:monospace;font-size:1.8em;font-weight:700;border-radius:10px;letter-spacing:0.15em">${claimCode}</div>
+        <p style="color:#888;font-size:0.8em;margin:8px 0 0">Enter this on the claim page to release your funds</p>
+      </div>`
     : "";
   const html = wrapEmail({
     heading: `Someone left you a message`,
     body: `
       <p style="color:#444;line-height:1.6">An agent named <strong>${label || "Untitled"}</strong> was set up for you. Its trigger condition has been met — the message and funds below are now yours.</p>
       ${letterBlock}
+      ${codeBlock}
       ${claimUrl
         ? `<a href="${claimUrl}" style="display:inline-block;margin-top:20px;padding:14px 28px;background:#1a1a17;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;font-size:1em">💰 Claim Your Funds →</a>`
         : ""}
-      <br>
-      <a href="${statusUrl}" style="display:inline-block;margin-top:12px;padding:10px 20px;background:#f0f0ec;color:#1a1a17;text-decoration:none;border-radius:8px;font-size:0.9em">View Full Status</a>
     `,
   });
   return resend.emails.send({
     from: FROM_EMAIL,
     to,
-    subject: `📬 ${label || "A BuildOS agent"} — a message is waiting for you`,
+    subject: `📬 ${label || "A BuildOS agent"} — funds are waiting for you`,
     html,
   });
 }
