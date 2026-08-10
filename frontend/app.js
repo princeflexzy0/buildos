@@ -544,7 +544,6 @@ function renderAgent(agent) {
       <div class="agent-escrow-countdown" id="escrow-countdown-${agent.configHash}" style="display:none"></div>
       <div class="agent-actions">
         <button class="btn-small" onclick="doCheckin('${agent.configHash}')">Check In</button>
-        ${!committed ? `<button class="btn-small btn-primary" onclick="doCommit('${agent.configHash}')">Commit Onchain</button>` : ""}
         <button class="btn-small btn-danger" onclick="doDelete('${agent.configHash}')">Delete</button>
       </div>
       <div class="agent-links">${links.join("")}</div>

@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Console BuildOS</title>
-<link rel="icon" href="assets/favicon.png">
+<link rel="icon" href="assets/logo-full.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1786218938">
+<link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="legal.css">
 </head>
 <body>
@@ -30,7 +30,7 @@
     </nav>
     <div class="nav-right">
       <label class="demo-toggle-wrap" title="Preview with a pre-seeded demo account">
-        <span class="demo-toggle-label" title="Try everything free with a demo wallet — no gas needed">Try Free</span>
+        <span class="demo-toggle-label">Demo</span>
         <input type="checkbox" id="demoToggle" onchange="toggleDemoMode(this.checked)">
         <span class="demo-toggle-slider"></span>
       </label>
@@ -60,12 +60,6 @@
 </header>
 
 <main class="page-main">
-<div id="onboardingBanner" style="display:none;background:#fffbea;border-bottom:1px solid #f0e080;padding:12px 24px;text-align:center;font-size:0.95em">
-  🚀 <strong>New here?</strong> You need testnet OKB to commit agents onchain.
-  <a href="https://web3.okx.com/xlayer/faucet" target="_blank" style="color:#a67c00;font-weight:600;margin:0 8px">Claim 0.2 free OKB from the faucet ↗</a>
-  — takes 30 seconds, then come back and try for real.
-  <button onclick="document.getElementById('onboardingBanner').style.display='none'" style="margin-left:12px;background:none;border:none;cursor:pointer;opacity:0.5">✕</button>
-</div>
 
 <section class="console-standalone">
   <div class="console-header">
@@ -149,6 +143,6 @@
 <script src="app.js?v=1786197293"></script>
 <script src="demo.js?v=1786197293"></script>
 <script src="demo-mode.js?v=1786197293"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script><script>window.addEventListener("DOMContentLoaded",()=>{const t=new URLSearchParams(location.search).get("template");if(t&&typeof loadTemplate==="function")loadTemplate(t);});</script>
 </body>
 </html>

@@ -263,6 +263,6 @@ console_body = '''
 </section>
 '''
 build("console.html", "Console BuildOS", "console", console_body,
-      extra_scripts='<script>window.addEventListener("DOMContentLoaded",()=>{const t=new URLSearchParams(location.search).get("template");if(t&&typeof loadTemplate==="function")loadTemplate(t);});</script>')
+      extra_scripts='<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script><script>window.addEventListener("DOMContentLoaded",()=>{const t=new URLSearchParams(location.search).get("template");if(t&&typeof loadTemplate==="function")loadTemplate(t);});</script>')
 
 print("all pages built from identical nav/footer partials index.html included")
