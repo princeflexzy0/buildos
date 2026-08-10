@@ -5,3 +5,6 @@ artifacts/
 deployments/*
 *.log
 !deployments/xlayer_testnet.json
+signal-monitor/agents.db
+signal-monitor/agents.db-shm
+signal-monitor/agents.db-wal
