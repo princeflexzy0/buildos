@@ -40,7 +40,8 @@
       <p style="color:#888;margin:0 0 24px;font-size:0.95em">Connect the recipient wallet to withdraw funds from escrow.</p>
 
       <div id="connectSection">
-        <button class="btn-claim" id="connectBtn" onclick="this.disabled=true; setTimeout(()=>connectAndLoad(),0)">Connect Wallet to Claim</button>
+        <input id="addrInput" type="text" placeholder="Paste your wallet address (0x...)" style="width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;font-size:14px;margin-bottom:10px;box-sizing:border-box;">
+        <button class="btn-claim" id="connectBtn" onclick="connectAndLoad()">View &amp; Claim Funds</button>
       </div>
 
       <div id="depositSection" style="display:none">
@@ -75,14 +76,12 @@ async function connectAndLoad() {
     document.getElementById("depositSection").style.display = "block";
     return;
   }
-  // Show wallet picker
-  const pick = confirm("Which wallet?\n\nOK = OKX Wallet\nCancel = MetaMask");
-  const addr = await connectWith(pick ? "okx" : "metamask");
-  if (!addr) {
-    alert("Wallet connection failed. Try again.");
+  const input = document.getElementById("addrInput").value.trim();
+  if (!input || !input.startsWith("0x") || input.length !== 42) {
+    alert("Please paste a valid wallet address (0x... 42 characters).");
     return;
   }
-  connectedAddr = addr;
+  connectedAddr = input.toLowerCase();
   document.getElementById("connectSection").style.display = "none";
   document.getElementById("depositSection").style.display = "block";
   await loadDeposit();
