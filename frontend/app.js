@@ -29,22 +29,66 @@ async function checkHealth() {
 }
 
 // ─── Wallet balance ───────────────────────────────────────────────────────────
+const ERC20_BALANCE_ABI = "0x70a08231"; // balanceOf(address)
+
+async function rpcCall(method, params) {
+  const rpc = (window.BUILDOS_CONFIG?.RPC_URL) || "https://testrpc.xlayer.tech";
+  const res = await fetch(rpc, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+  });
+  const json = await res.json();
+  return json.result;
+}
+
+async function getERC20Balance(tokenAddress, walletAddress) {
+  // balanceOf(address) call — pad address to 32 bytes
+  const padded = walletAddress.slice(2).toLowerCase().padStart(64, "0");
+  const data = ERC20_BALANCE_ABI + padded;
+  const result = await rpcCall("eth_call", [{ to: tokenAddress, data }, "latest"]);
+  return result && result !== "0x" ? BigInt(result) : BigInt(0);
+}
+
 async function fetchWalletBalance(address) {
   const balBar = document.getElementById("walletBalanceBar");
   if (!balBar || !address) return;
   balBar.style.display = "flex";
-  balBar.innerHTML = `<span>Balance:</span> <strong>loading…</strong>`;
+  balBar.innerHTML = `<span>Balances:</span> <strong>loading…</strong>`;
   try {
-    const rpc = "https://testrpc.xlayer.tech";
-    const res = await fetch(rpc, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_getBalance", params: [address, "latest"] }),
-    });
-    const json = await res.json();
-    const okb = (parseInt(json.result, 16) / 1e18).toFixed(4);
-    balBar.innerHTML = `<span>Wallet balance (testnet):</span> <strong>${okb} OKB</strong>`;
-  } catch {
+    const cfg = window.BUILDOS_CONFIG || {};
+    // Fetch OKB (native) + USDT + USDC in parallel
+    const [okbHex, usdtRaw, usdcRaw] = await Promise.all([
+      rpcCall("eth_getBalance", [address, "latest"]),
+      cfg.TOKEN_CONTRACTS?.USDT ? getERC20Balance(cfg.TOKEN_CONTRACTS.USDT, address) : Promise.resolve(BigInt(0)),
+      cfg.TOKEN_CONTRACTS?.USDC ? getERC20Balance(cfg.TOKEN_CONTRACTS.USDC, address) : Promise.resolve(BigInt(0)),
+    ]);
+    const okb = (parseInt(okbHex, 16) / 1e18).toFixed(4);
+    const usdt = (Number(usdtRaw) / 1e6).toFixed(2); // USDT is 6 decimals
+    const usdc = (Number(usdcRaw) / 1e6).toFixed(2); // USDC is 6 decimals
+
+    balBar.innerHTML = `
+      <span style="opacity:0.7;font-size:0.9em">Wallet (testnet):</span>
+      <strong>${okb} OKB</strong>
+      <span style="opacity:0.5;margin:0 4px">·</span>
+      <strong>${usdt} USDT</strong>
+      <span style="opacity:0.5;margin:0 4px">·</span>
+      <strong>${usdc} USDC</strong>`;
+
+    // Update token dropdown to show balances
+    const tokenSelect = document.getElementById("tokenSelect");
+    if (tokenSelect) {
+      tokenSelect.innerHTML = `
+        <option value="OKB">OKB (${okb})</option>
+        <option value="USDT">USDT (${usdt})</option>
+        <option value="USDC">USDC (${usdc})</option>`;
+      if (currentConfig?.token) tokenSelect.value = currentConfig.token;
+    }
+
+    // Store balances for commit validation
+    window._walletBalances = { OKB: okbHex, USDT: usdtRaw, USDC: usdcRaw };
+  } catch(e) {
     balBar.innerHTML = `<span>Balance unavailable</span>`;
+    console.warn("[balance]", e.message);
   }
 }
 
@@ -394,18 +438,34 @@ commitBtn?.addEventListener("click", async () => {
       const valueHex = currentConfig.amount
         ? "0x" + Math.floor(Number(currentConfig.amount) * 1e18).toString(16)
         : "0x0";
-      // Check balance before sending — block if insufficient
-      const balanceHex = await window.activeProvider.request({
-        method: "eth_getBalance",
-        params: [connectedAddress, "latest"],
-      });
-      const balanceWei = BigInt(balanceHex);
-      const sendWei = BigInt(valueHex);
+      // Check balance before sending — use correct token balance
+      const selectedToken = currentConfig.token || "OKB";
       const gasBuffer = BigInt("500000000000000"); // ~0.0005 OKB for gas
-      if (balanceWei < sendWei + gasBuffer) {
-        const balanceOKB = (Number(balanceWei) / 1e18).toFixed(6);
-        const needOKB = (Number(sendWei + gasBuffer) / 1e18).toFixed(6);
-        throw new Error(`Insufficient balance. You have ${balanceOKB} OKB, need at least ${needOKB} OKB (amount + gas).`);
+      if (selectedToken === "OKB") {
+        const balanceHex = await window.activeProvider.request({ method: "eth_getBalance", params: [connectedAddress, "latest"] });
+        const balanceWei = BigInt(balanceHex);
+        const sendWei = BigInt(valueHex);
+        if (balanceWei < sendWei + gasBuffer) {
+          const have = (Number(balanceWei) / 1e18).toFixed(6);
+          const need = (Number(sendWei + gasBuffer) / 1e18).toFixed(6);
+          throw new Error(`Insufficient OKB. You have ${have} OKB, need at least ${need} OKB (amount + gas).`);
+        }
+      } else {
+        // ERC-20 — check token balance + OKB for gas separately
+        const cfg = window.BUILDOS_CONFIG || {};
+        const tokenAddr = cfg.TOKEN_CONTRACTS?.[selectedToken];
+        if (!tokenAddr) throw new Error(`${selectedToken} contract address not configured.`);
+        const tokenBal = await getERC20Balance(tokenAddr, connectedAddress);
+        const sendAmt = currentConfig.amount ? BigInt(Math.floor(Number(currentConfig.amount) * 1e6)) : BigInt(0);
+        if (tokenBal < sendAmt) {
+          const have = (Number(tokenBal) / 1e6).toFixed(2);
+          throw new Error(`Insufficient ${selectedToken}. You have ${have} ${selectedToken}, need ${currentConfig.amount}.`);
+        }
+        // Also check OKB for gas
+        const okbHex = await window.activeProvider.request({ method: "eth_getBalance", params: [connectedAddress, "latest"] });
+        if (BigInt(okbHex) < gasBuffer) {
+          throw new Error(`Insufficient OKB for gas. You need at least 0.0005 OKB to cover transaction fees.`);
+        }
       }
       const txHash = await window.activeProvider.request({
         method: "eth_sendTransaction",
