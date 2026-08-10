@@ -506,6 +506,52 @@ commitBtn?.addEventListener("click", async () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ txHash, from: connectedAddress, escrow: escrowAddr }),
       }).catch(() => {});
+
+      // Get deposit ID from tx receipt logs
+      try {
+        const cfg = window.BUILDOS_CONFIG || {};
+        const receipt = await window.activeProvider.request({
+          method: "eth_getTransactionReceipt",
+          params: [txHash],
+        });
+        // Deposited event topic: keccak256("Deposited(uint256,address,address,address,uint256,uint256)")
+        const depositedTopic = "0x2da466a7b24304f47e87fa2e1e5a81b9831ce54fec19055ce277ca2f39ba42c4";
+        const depositLog = receipt?.logs?.find(l => l.topics?.[0] === depositedTopic);
+        if (depositLog) {
+          const depositId = parseInt(depositLog.topics[1], 16);
+          await fetch(`${MONITOR_URL}/record-deposit/${currentConfig.configHash}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ depositId, txHash }),
+          }).catch(() => {});
+          console.log("[escrow] deposit ID recorded:", depositId);
+        }
+      } catch(e) {
+        console.warn("[escrow] could not capture deposit ID:", e.message);
+      }
+
+      // Get deposit ID from tx receipt logs
+      try {
+        const cfg = window.BUILDOS_CONFIG || {};
+        const receipt = await window.activeProvider.request({
+          method: "eth_getTransactionReceipt",
+          params: [txHash],
+        });
+        // Deposited event topic: keccak256("Deposited(uint256,address,address,address,uint256,uint256)")
+        const depositedTopic = "0x2da466a7b24304f47e87fa2e1e5a81b9831ce54fec19055ce277ca2f39ba42c4";
+        const depositLog = receipt?.logs?.find(l => l.topics?.[0] === depositedTopic);
+        if (depositLog) {
+          const depositId = parseInt(depositLog.topics[1], 16);
+          await fetch(`${MONITOR_URL}/record-deposit/${currentConfig.configHash}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ depositId, txHash }),
+          }).catch(() => {});
+          console.log("[escrow] deposit ID recorded:", depositId);
+        }
+      } catch(e) {
+        console.warn("[escrow] could not capture deposit ID:", e.message);
+      }
     }
     await refreshAgents();
   } catch (err) {

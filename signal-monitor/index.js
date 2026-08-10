@@ -207,6 +207,17 @@ function autoEvaluate(state) {
   evaluateConsensus(state);
   if (state.consensusMet && !state.triggerEmailSent) {
     state.triggerEmailSent = true;
+    // Auto-release escrow if a depositId is recorded
+    if (state.escrowDepositId != null) {
+      chain.releaseEscrow(state.escrowDepositId)
+        .then(r => {
+          state.escrowReleased = true;
+          state.escrowReleaseTxHash = r.txHash;
+          saveToDisk();
+          console.log(`[escrow] auto-released deposit #${state.escrowDepositId} — tx: ${r.txHash}`);
+        })
+        .catch(e => console.warn(`[escrow] auto-release failed:`, e.message));
+    }
     const statusUrl = statusUrlFor(state.configHash);
     if (state.ownerEmail) {
       notifier.sendTriggerFiredOwnerEmail({

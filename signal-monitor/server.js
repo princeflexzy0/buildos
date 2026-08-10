@@ -250,6 +250,25 @@ const server = http.createServer(async (req, res) => {
     }));
   }
 
+  // Record escrow deposit ID after frontend commits to EscrowVault
+  if (req.method === "POST" && parts[0] === "record-deposit" && parts[1]) {
+    let body;
+    try { body = await readBody(req); } catch {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "Invalid JSON body" }));
+    }
+    const state = getAgent(parts[1]);
+    if (!state) {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "agent not found" }));
+    }
+    state.escrowDepositId = body.depositId;
+    state.escrowTxHash = body.txHash;
+    saveToDisk();
+    res.writeHead(200, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({ success: true }));
+  }
+
   if (req.method === "POST" && parts[0] === "simulate" && parts[1]) {
     let body;
     try {

@@ -113,4 +113,39 @@ module.exports = {
   createOnchainAgent,
   submitVerdict,
   getAgentBalance,
+  releaseEscrow,
+  getEscrowDeposit,
 };
+
+// Releases escrow to recipient when agent triggers
+// Calls EscrowVault.withdraw(depositId) on behalf of the recipient
+async function releaseEscrow(depositId) {
+  const deployment = loadDeployment();
+  const { wallet } = getProviderAndWallet();
+  const escrowInfo = deployment.contracts.EscrowVault;
+  if (!escrowInfo) throw new Error("EscrowVault not in deployment");
+  const escrow = new ethers.Contract(escrowInfo.address, escrowInfo.abi, wallet);
+
+  console.log(`[escrow] releasing deposit #${depositId}`);
+  const tx = await escrow.withdraw(depositId);
+  const receipt = await tx.wait();
+  console.log(`[escrow] released — tx: ${receipt.hash}`);
+  return { txHash: receipt.hash };
+}
+
+// Checks if a deposit exists and is ready to withdraw
+async function getEscrowDeposit(depositId) {
+  const deployment = loadDeployment();
+  const { wallet } = getProviderAndWallet();
+  const escrowInfo = deployment.contracts.EscrowVault;
+  const escrow = new ethers.Contract(escrowInfo.address, escrowInfo.abi, wallet);
+  const deposit = await escrow.getDeposit(depositId);
+  return {
+    depositor: deposit.depositor,
+    recipient: deposit.recipient,
+    amount: deposit.amount.toString(),
+    unlockAt: deposit.unlockAt.toString(),
+    released: deposit.released,
+    refunded: deposit.refunded,
+  };
+}
