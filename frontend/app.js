@@ -445,7 +445,7 @@ commitBtn?.addEventListener("click", async () => {
       // Show success with deposit + claim info
       const depositId = data.agent?.escrowDepositId ?? data.escrowDepositId ?? null;
       const claimUrl = depositId != null
-        ? `${window.location.origin}/claim.html?depositId=${depositId}`
+        ? `${window.location.origin}/claim?depositId=${depositId}`
         : null;
       const explorerBase = window.BUILDOS_CONFIG?.EXPLORER_TX_BASE || "https://www.okx.com/web3/explorer/xlayer-test/tx";
       const txHash = data.agent?.onchain?.createTxHash || data.txHash || null;
@@ -565,7 +565,7 @@ function renderAgent(agent) {
         <div class="agent-escrow-status" style="margin:6px 0;padding:8px 12px;border-radius:8px;font-size:0.85em;${agent.claimClaimed ? 'background:#e8f5e9;color:#2d6a4f;border:1px solid #a5d6a7' : 'background:#fff8e1;color:#a67c00;border:1px solid #f0e080'}">
           ${agent.claimClaimed
             ? `✅ Funds claimed · <strong>${agent.escrowAmount} OKB</strong> released to recipient`
-            : `⏳ <strong>${agent.escrowAmount} OKB</strong> sitting in escrow · <a href="/claim.html?depositId=${agent.escrowDepositId}" target="_blank" style="color:#a67c00;font-weight:600">Claim link ↗</a>`
+            : `⏳ <strong>${agent.escrowAmount} OKB</strong> sitting in escrow · <a href="/claim?depositId=${agent.escrowDepositId}" target="_blank" style="color:#a67c00;font-weight:600">Claim link ↗</a>`
           }
         </div>` : ""}
       <div class="agent-escrow-countdown" id="escrow-countdown-${agent.configHash}" style="display:none"></div>
