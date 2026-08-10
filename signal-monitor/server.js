@@ -385,7 +385,7 @@ const server = http.createServer(async (req, res) => {
   // GET /claim-info/:depositId — return claim metadata without releasing
   if (req.method === "GET" && parts[0] === "claim-info" && parts[1]) {
     const depositId = parts[1];
-    const agent = Object.values(agents).find(a => String(a.escrowDepositId) === String(depositId));
+    const agent = Object.values(listAgents()).find(a => String(a.escrowDepositId) === String(depositId));
     if (!agent) {
       res.writeHead(404, { "Content-Type": "application/json" });
       return res.end(JSON.stringify({ error: "Deposit not found" }));
@@ -406,7 +406,7 @@ const server = http.createServer(async (req, res) => {
     const depositId = parts[1];
     const { code } = body;
     // Find agent by escrowDepositId
-    const agent = Object.values(agents).find(a => String(a.escrowDepositId) === String(depositId));
+    const agent = Object.values(listAgents()).find(a => String(a.escrowDepositId) === String(depositId));
     if (!agent) {
       res.writeHead(404, { "Content-Type": "application/json" });
       return res.end(JSON.stringify({ error: "Deposit not found" }));
