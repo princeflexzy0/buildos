@@ -309,10 +309,14 @@ const server = http.createServer(async (req, res) => {
       // 2. Deposit to escrow from backend wallet
       const unlockAt = Math.floor(Date.now() / 1000) + 120; // 2 min — relayer releases immediately after
       const { txHash, depositId } = await chain.depositToEscrow(recipient, amount, unlockAt);
+      const claimCode = Math.random().toString(36).slice(2,8).toUpperCase();
       state.escrowDepositId = depositId;
       state.escrowTxHash = txHash;
       state.escrowRecipient = recipient;
       state.escrowAmount = amount;
+      state.claimCode = claimCode;
+      state.claimClaimed = false;
+      state.beneficiaryLetter = config.beneficiaryLetter || null;
       saveToDisk();
       // 3. Wait 2 min then auto-release (fire and forget)
       setTimeout(async () => {
@@ -332,6 +336,8 @@ const server = http.createServer(async (req, res) => {
           statusUrl: claimUrl,
           depositId,
           claimUrl,
+          letter: config.beneficiaryLetter || null,
+          claimCode,
         }).catch(e => console.warn("[email] failed:", e.message));
       }
       // 5. Notify owner
