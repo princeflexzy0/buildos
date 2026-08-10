@@ -40,7 +40,7 @@
       <p style="color:#888;margin:0 0 24px;font-size:0.95em">Connect the recipient wallet to withdraw funds from escrow.</p>
 
       <div id="connectSection">
-        <button class="btn-claim" onclick="connectAndLoad()">Connect Wallet to Claim</button>
+        <button class="btn-claim" id="connectBtn" onclick="document.getElementById('connectBtn').disabled=true; connectAndLoad()">Connect Wallet to Claim</button>
       </div>
 
       <div id="depositSection" style="display:none">
