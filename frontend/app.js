@@ -476,9 +476,20 @@ commitBtn?.addEventListener("click", async () => {
           throw new Error(`Insufficient OKB for gas. You need at least 0.0005 OKB to cover transaction fees.`);
         }
       }
+      // Step 1: Register agent with monitor (same as demo)
+      const regRes = await fetch(`${MONITOR_URL}/commit-onchain/${currentConfig.configHash}`, { method: "POST" });
+      const regData = await regRes.json();
+      if (!regData.success) throw new Error(regData.error || "agent registration failed");
+
+      // Step 2: Deposit funds to EscrowVault if amount specified
       const cfg = window.BUILDOS_CONFIG || {};
       const escrowAddr = cfg.ESCROW_ADDRESS;
       if (!escrowAddr) throw new Error("Escrow contract address not configured.");
+      if (!currentConfig.amount || Number(currentConfig.amount) === 0) {
+        // No amount — just register, no escrow deposit needed
+        await refreshAgents();
+        return;
+      }
 
       // Encode depositNative(recipient, unlockAt) call
       // depositNative(address recipient, uint256 unlockAt)
