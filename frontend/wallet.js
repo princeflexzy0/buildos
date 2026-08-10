@@ -40,6 +40,14 @@ async function connectWith(providerKey) {
   }
 
   try {
+    try {
+      await provider.request({
+        method: "wallet_requestPermissions",
+        params: [{ eth_accounts: {} }],
+      });
+    } catch (permErr) {
+      console.warn("[wallet] wallet_requestPermissions unsupported:", permErr.message);
+    }
     const accounts = await provider.request({ method: "eth_requestAccounts" });
     connectedAddress = accounts[0];
     window.activeProvider = provider; // used later for eth_sendTransaction calls
@@ -72,6 +80,13 @@ async function connectWith(providerKey) {
 }
 
 function disconnectWallet() {
+  const providerToRevoke = window.activeProvider;
+  if (providerToRevoke) {
+    providerToRevoke
+      .request({ method: "wallet_revokePermissions", params: [{ eth_accounts: {} }] })
+      .catch((e) => console.warn("[wallet] revoke failed (wallet may not support it):", e.message));
+  }
+
   connectedAddress = null;
   activeProviderName = null;
   window.activeProvider = null;
