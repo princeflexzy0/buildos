@@ -338,7 +338,7 @@ const server = http.createServer(async (req, res) => {
         }
       }, 130000); // 2min 10sec
       // 4. Send claim email to recipient
-      const claimUrl = `${process.env.SITE_URL || "https://buildos.tech"}/claim.html?depositId=${depositId}`;
+      const claimUrl = `${process.env.SITE_URL || "https://buildos.tech"}/claim?depositId=${depositId}`;
       if (recipientEmail) {
         await notifier.sendTriggerFiredBeneficiaryEmail({
           to: recipientEmail,
