@@ -435,6 +435,11 @@ textarea:focus { outline: none; border-color: var(--accent); }
 .faq-item { background: var(--surface-2); border: 1px solid var(--border-light); border-radius: 12px; padding: 20px; }
 .faq-item h4 { font-size: 14px; font-weight: 600; margin: 0 0 8px; color: var(--text); }
 .faq-item p { font-size: 13px; color: var(--text-dim); margin: 0; line-height: 1.6; }
+.roadmap-section { background: var(--surface-2); border: 1px solid var(--border-light); border-radius: 12px; padding: 20px; margin-top: 16px; }
+.roadmap-section h3 { font-size: 16px; font-weight: 600; margin: 0 0 12px; color: var(--text); }
+.roadmap-section ul { margin: 0; padding-left: 20px; }
+.roadmap-section li { font-size: 13px; color: var(--text-dim); line-height: 1.8; }
+.roadmap-section li strong { color: var(--text); }
 .page-section { max-width: 1100px; margin: 0 auto; padding: 48px 24px; }
 @media (max-width: 700px) {
   .faq-grid { grid-template-columns: 1fr; }
