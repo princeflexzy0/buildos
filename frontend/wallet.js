@@ -58,6 +58,8 @@ async function connectWith(providerKey) {
       updateWalletUI(connectedAddress);
     });
 
+    localStorage.setItem("buildos_wallet_address", connectedAddress);
+    localStorage.setItem("buildos_wallet_provider", providerKey);
     updateWalletUI(connectedAddress);
     closeWalletModal();
     return connectedAddress;
@@ -71,6 +73,8 @@ function disconnectWallet() {
   connectedAddress = null;
   activeProviderName = null;
   window.activeProvider = null;
+  localStorage.removeItem("buildos_wallet_address");
+  localStorage.removeItem("buildos_wallet_provider");
   const btn = document.getElementById("walletBtn");
   const pill = document.getElementById("walletPill");
   if (btn) { btn.textContent = "Connect Wallet"; btn.classList.remove("connected"); btn.onclick = openWalletModal; }
@@ -100,3 +104,41 @@ function toggleMobileMenu() {
   menu.classList.toggle("open");
   btn.classList.toggle("open");
 }
+
+// Auto-reconnect on page load if wallet was previously connected
+(async function autoReconnect() {
+  const savedAddress = localStorage.getItem("buildos_wallet_address");
+  const savedProvider = localStorage.getItem("buildos_wallet_provider");
+  if (!savedAddress || !savedProvider) return;
+  // Check if wallet is still available and has the same account
+  try {
+    let provider;
+    if (savedProvider === "okx") provider = window.okxwallet;
+    else if (savedProvider === "metamask") {
+      provider = window.ethereum?.providers
+        ? window.ethereum.providers.find(p => p.isMetaMask)
+        : (window.ethereum?.isMetaMask ? window.ethereum : null);
+    }
+    if (!provider) return;
+    const accounts = await provider.request({ method: "eth_accounts" }); // no popup
+    if (!accounts.length || accounts[0].toLowerCase() !== savedAddress.toLowerCase()) {
+      localStorage.removeItem("buildos_wallet_address");
+      localStorage.removeItem("buildos_wallet_provider");
+      return;
+    }
+    connectedAddress = accounts[0];
+    window.activeProvider = provider;
+    activeProviderName = savedProvider === "okx" ? "OKX Wallet" : "MetaMask";
+    provider.on?.("accountsChanged", (accs) => {
+      if (!accs.length) { disconnectWallet(); return; }
+      connectedAddress = accs[0];
+      localStorage.setItem("buildos_wallet_address", connectedAddress);
+      updateWalletUI(connectedAddress);
+    });
+    updateWalletUI(connectedAddress);
+    // Reload agent list for this wallet
+    if (typeof loadAgents === "function") loadAgents();
+  } catch (e) {
+    console.warn("[wallet] auto-reconnect failed:", e.message);
+  }
+})();
