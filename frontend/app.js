@@ -67,6 +67,9 @@ async function fetchWalletBalance(address) {
     const usdc = (Number(usdcRaw) / 1e6).toFixed(2); // USDC is 6 decimals
 
     const lowOKB = parseFloat(okb) < 0.01;
+    // Show onboarding banner for new users with no OKB
+    const banner = document.getElementById("onboardingBanner");
+    if (banner) banner.style.display = lowOKB ? "block" : "none";
     balBar.innerHTML = `
       <span style="opacity:0.7;font-size:0.9em">Wallet (X Layer testnet):</span>
       <strong>${okb} OKB</strong>
@@ -111,6 +114,7 @@ function normalizeConfig(raw) {
     amount, token, recipient,
     trigger: trigger?.description || trigger?.type || "—",
     triggerSeconds: trigger?.thresholdSeconds,
+    triggers: raw.triggers || [],
     requiresBeneficiary: action.requiresBeneficiary || false,
     configHash: raw.configHash || null,
   };
@@ -471,14 +475,36 @@ commitBtn?.addEventListener("click", async () => {
           throw new Error(`Insufficient OKB for gas. You need at least 0.0005 OKB to cover transaction fees.`);
         }
       }
+      const cfg = window.BUILDOS_CONFIG || {};
+      const escrowAddr = cfg.ESCROW_ADDRESS;
+      if (!escrowAddr) throw new Error("Escrow contract address not configured.");
+
+      // Encode depositNative(recipient, unlockAt) call
+      // depositNative(address recipient, uint256 unlockAt)
+      // selector: 0x4e71d92d... let's use eth_call to get it right
+      // Function selector for depositNative(address,uint256): 0x8a08e4d7
+      const recipientPadded = currentConfig.recipient.slice(2).toLowerCase().padStart(64, "0");
+      // unlockAt = now + trigger threshold in seconds (from compiled config, default 30 days)
+      const triggerSeconds = currentConfig.triggers?.[0]?.thresholdSeconds
+        || currentConfig.triggerThresholdSeconds
+        || (30 * 86400);
+      const unlockAt = Math.floor(Date.now() / 1000) + triggerSeconds;
+      const unlockPadded = unlockAt.toString(16).padStart(64, "0");
+      const depositData = "0x02279b4a" + recipientPadded + unlockPadded;
+
       const txHash = await window.activeProvider.request({
         method: "eth_sendTransaction",
-        params: [{ from: connectedAddress, to: currentConfig.recipient, value: valueHex }],
+        params: [{ 
+          from: connectedAddress, 
+          to: escrowAddr,
+          value: valueHex,
+          data: depositData,
+        }],
       });
       await fetch(`${MONITOR_URL}/record-tx/${currentConfig.configHash}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ txHash, from: connectedAddress }),
+        body: JSON.stringify({ txHash, from: connectedAddress, escrow: escrowAddr }),
       }).catch(() => {});
     }
     await refreshAgents();
