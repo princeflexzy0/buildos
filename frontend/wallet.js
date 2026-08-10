@@ -60,6 +60,7 @@ async function connectWith(providerKey) {
 
     localStorage.setItem("buildos_wallet_address", connectedAddress);
     localStorage.setItem("buildos_wallet_provider", providerKey);
+    sessionStorage.removeItem("buildos_wallet_disconnected");
     updateWalletUI(connectedAddress);
     closeWalletModal();
     window.dispatchEvent(new Event("buildos:wallet:ready"));
@@ -76,6 +77,7 @@ function disconnectWallet() {
   window.activeProvider = null;
   localStorage.removeItem("buildos_wallet_address");
   localStorage.removeItem("buildos_wallet_provider");
+  sessionStorage.setItem("buildos_wallet_disconnected", "1");
   const btn = document.getElementById("walletBtn");
   const pill = document.getElementById("walletPill");
   if (btn) {
@@ -97,8 +99,10 @@ function updateWalletUI(address) {
     btn.classList.add("connected");
     btn.title = "Click to disconnect " + activeProviderName;
     btn.onclick = () => {
-      if (confirm("Disconnect " + activeProviderName + "?\n\nThis will clear your session and hide your agents.")) {
+      if (confirm("Disconnect " + activeProviderName + "?\n\nYour agents will be hidden and you will need to reconnect your wallet.")) {
         disconnectWallet();
+        // Force wallet picker to show on next connect — no auto-reconnect
+        openWalletModal();
       }
     };
   }
@@ -121,6 +125,8 @@ function toggleMobileMenu() {
 
 // Auto-reconnect on page load if wallet was previously connected
 (async function autoReconnect() {
+  // Don't auto-reconnect if user explicitly disconnected this session
+  if (sessionStorage.getItem("buildos_wallet_disconnected")) return;
   const savedAddress = localStorage.getItem("buildos_wallet_address");
   const savedProvider = localStorage.getItem("buildos_wallet_provider");
   if (!savedAddress || !savedProvider) return;
