@@ -107,7 +107,7 @@ async function loadDeposit() {
     // Call getDeposit(depositId)
     // getDeposit(uint256) selector: 0x59e02dd7
     const idPadded = parseInt(depositId).toString(16).padStart(64, "0");
-    const result = await rpcCall("eth_call", [{ to: escrowAddr, data: "0x59e02dd7" + idPadded }, "latest"]);
+    const result = await rpcCall("eth_call", [{ to: escrowAddr, data: "0xb02c43d0" + idPadded }, "latest"]);
 
     if (!result || result === "0x") throw new Error("Deposit not found");
 
