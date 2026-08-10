@@ -447,22 +447,22 @@ commitBtn?.addEventListener("click", async () => {
       const claimUrl = depositId != null
         ? `${window.location.origin}/claim.html?depositId=${depositId}`
         : null;
+      const explorerBase = window.BUILDOS_CONFIG?.EXPLORER_TX_BASE || "https://www.okx.com/web3/explorer/xlayer-test/tx";
+      const txHash = data.agent?.onchain?.createTxHash || data.txHash || null;
+      const txUrl = txHash ? `${explorerBase}/${txHash}` : null;
       const msg = claimUrl
-        ? `✅ Agent committed onchain!
-
-Share this claim link with your beneficiary:
-${claimUrl}`
-        : `✅ Agent committed onchain!
-
-Tx: ${data.txHash || "confirmed"}`;
+        ? `✅ Agent committed onchain!\n\nShare this claim link with your beneficiary:\n${claimUrl}${txUrl ? "\n\nView tx: " + txUrl : ""}`
+        : `✅ Agent committed onchain!${txUrl ? "\n\nView tx: " + txUrl : ""}`;
       alert(msg);
-      if (claimUrl) {
-        const shareRow = document.getElementById("shareStatusRow");
-        const shareVal = document.getElementById("shareStatusValue");
-        if (shareRow && shareVal) {
-          shareRow.style.display = "flex";
-          shareVal.innerHTML = `<a href="${claimUrl}" target="_blank">${claimUrl}</a>`;
-        }
+      // Show persistent links in UI
+      const shareRow = document.getElementById("shareStatusRow");
+      const shareVal = document.getElementById("shareStatusValue");
+      if (shareRow && shareVal) {
+        shareRow.style.display = "flex";
+        let html = "";
+        if (claimUrl) html += `<a href="${claimUrl}" target="_blank" style="display:block;margin-bottom:6px">🔗 Claim link →</a>`;
+        if (txUrl) html += `<a href="${txUrl}" target="_blank" style="display:block;font-size:0.85em;color:#888;word-break:break-all">🧾 View tx on explorer ↗</a>`;
+        shareVal.innerHTML = html;
       }
     } else {
       if (!window.activeProvider) throw new Error("No wallet provider active");
@@ -514,8 +514,19 @@ Tx: ${data.txHash || "confirmed"}`;
       });
       const commitData = await commitRes.json();
       if (!commitData.success) throw new Error(commitData.error || "commit failed");
-      const explorerBase = window.BUILDOS_CONFIG?.EXPLORER_TX_BASE || "";
-      alert(`✅ Committed!\n\nDeposit ID: ${commitData.depositId}\nFunds will be released to ${currentConfig.recipient} automatically.\n\nClaim link: ${commitData.claimUrl}\n\nTX: ${explorerBase}/${commitData.txHash}`);
+      const explorerBase2 = window.BUILDOS_CONFIG?.EXPLORER_TX_BASE || "https://www.okx.com/web3/explorer/xlayer-test/tx";
+      const txUrl2 = commitData.txHash ? `${explorerBase2}/${commitData.txHash}` : null;
+      alert(`✅ Committed!\n\nFunds will be released to ${currentConfig.recipient} automatically.${commitData.claimUrl ? "\n\n📬 Claim link (share with beneficiary):\n" + commitData.claimUrl : ""}${txUrl2 ? "\n\n🧾 View tx:\n" + txUrl2 : ""}`);
+      // Show persistent links in UI
+      const shareRow2 = document.getElementById("shareStatusRow");
+      const shareVal2 = document.getElementById("shareStatusValue");
+      if (shareRow2 && shareVal2) {
+        shareRow2.style.display = "flex";
+        let html2 = "";
+        if (commitData.claimUrl) html2 += `<a href="${commitData.claimUrl}" target="_blank" style="display:block;margin-bottom:6px">🔗 Claim link →</a>`;
+        if (txUrl2) html2 += `<a href="${txUrl2}" target="_blank" style="display:block;font-size:0.85em;color:#888;word-break:break-all">🧾 View tx on explorer ↗</a>`;
+        shareVal2.innerHTML = html2;
+      }
 
     }
     await refreshAgents();
