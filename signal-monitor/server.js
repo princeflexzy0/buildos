@@ -427,7 +427,7 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(200, { "Content-Type": "application/json" });
       return res.end(JSON.stringify({ already: true }));
     }
-    if (agent.claimCode && code && agent.claimCode.toUpperCase() !== code.toUpperCase()) {
+    if (agent.claimCode && agent.claimCode.toUpperCase() !== (code || "").toUpperCase()) {
       res.writeHead(403, { "Content-Type": "application/json" });
       return res.end(JSON.stringify({ error: "Invalid claim code" }));
     }
