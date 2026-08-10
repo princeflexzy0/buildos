@@ -334,8 +334,8 @@ const server = http.createServer(async (req, res) => {
         res.writeHead(400, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ error: "Not yet unlocked", secsLeft }));
       }
-      // Release funds to recipient
-      const { txHash } = await chain.releaseEscrow(depositId);
+      // Release funds to recipient via direct transfer (relayer pattern)
+      const { txHash } = await chain.relayTransfer(deposit.recipient, deposit.amount);
       res.writeHead(200, { "Content-Type": "application/json" });
       return res.end(JSON.stringify({ 
         success: true, 

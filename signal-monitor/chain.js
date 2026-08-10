@@ -106,6 +106,20 @@ async function getAgentBalance(agentId) {
   };
 }
 
+
+// Direct transfer to recipient — used when contract restricts withdraw to msg.sender==recipient
+async function relayTransfer(recipientAddress, amountWei) {
+  const { wallet } = getProviderAndWallet();
+  console.log(`[relay] sending ${amountWei} wei to ${recipientAddress}`);
+  const tx = await wallet.sendTransaction({
+    to: recipientAddress,
+    value: BigInt(amountWei),
+  });
+  const receipt = await tx.wait();
+  console.log(`[relay] sent — tx: ${receipt.hash}`);
+  return { txHash: receipt.hash };
+}
+
 module.exports = {
   loadDeployment,
   getFactoryContract,
@@ -114,6 +128,7 @@ module.exports = {
   submitVerdict,
   getAgentBalance,
   releaseEscrow,
+  relayTransfer,
   getEscrowDeposit,
 };
 
