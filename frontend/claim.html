@@ -72,20 +72,20 @@ let connectedAddr = null;
 async function connectAndLoad() {
   if (!depositId) {
     showStatus("error", "No deposit ID in URL. Check the link you received.");
+    document.getElementById("depositSection").style.display = "block";
     return;
   }
-  openWalletModal();
-  // Wait for connection
-  const interval = setInterval(async () => {
-    const addr = getAddress();
-    if (addr) {
-      clearInterval(interval);
-      connectedAddr = addr;
-      document.getElementById("connectSection").style.display = "none";
-      document.getElementById("depositSection").style.display = "block";
-      await loadDeposit();
-    }
-  }, 500);
+  // Show wallet picker
+  const pick = confirm("Which wallet?\n\nOK = OKX Wallet\nCancel = MetaMask");
+  const addr = await connectWith(pick ? "okx" : "metamask");
+  if (!addr) {
+    alert("Wallet connection failed. Try again.");
+    return;
+  }
+  connectedAddr = addr;
+  document.getElementById("connectSection").style.display = "none";
+  document.getElementById("depositSection").style.display = "block";
+  await loadDeposit();
 }
 
 async function rpcCall(method, params) {
