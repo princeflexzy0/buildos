@@ -336,4 +336,5 @@ module.exports = {
   guardianCheckin,
   deleteAgent,
   registry,
+  saveToDisk,
 };

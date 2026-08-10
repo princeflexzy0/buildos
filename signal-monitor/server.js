@@ -13,6 +13,7 @@ const {
   deleteAgent,
   setBeneficiaryLetter,
   guardianCheckin,
+  saveToDisk,
 } = require("./index");
 const chain = require("./chain");
 
