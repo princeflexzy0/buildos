@@ -206,6 +206,4 @@ Frontend + signal-monitor both deploy to Railway. Custom domain
 - **Claim endpoint hardened** - `POST /claim/:depositId` now rejects missing, empty, or incorrect claim codes with `403 Invalid claim code` instead of releasing funds
 - **Wallet disconnect now attempts to revoke provider permissions** - `disconnectWallet()` calls `wallet_revokePermissions` on the active provider; confirmed working on MetaMask. OKX Wallet's extension currently rejects this call (403), so switching OKX accounts requires the user to manually remove buildos.tech from OKX Wallet's own Connected Sites settings before reconnecting
 - **Wallet connect now attempts to force the account picker** - `connectWith()` calls `wallet_requestPermissions` before `eth_requestAccounts`; same OKX limitation applies
-EOF
-echo "done"
 
