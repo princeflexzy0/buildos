@@ -66,13 +66,17 @@ async function fetchWalletBalance(address) {
     const usdt = (Number(usdtRaw) / 1e6).toFixed(2); // USDT is 6 decimals
     const usdc = (Number(usdcRaw) / 1e6).toFixed(2); // USDC is 6 decimals
 
+    const lowOKB = parseFloat(okb) < 0.01;
     balBar.innerHTML = `
-      <span style="opacity:0.7;font-size:0.9em">Wallet (testnet):</span>
+      <span style="opacity:0.7;font-size:0.9em">Wallet (X Layer testnet):</span>
       <strong>${okb} OKB</strong>
       <span style="opacity:0.5;margin:0 4px">·</span>
       <strong>${usdt} USDT</strong>
       <span style="opacity:0.5;margin:0 4px">·</span>
-      <strong>${usdc} USDC</strong>`;
+      <strong>${usdc} USDC</strong>
+      ${lowOKB ? `<a href="https://web3.okx.com/xlayer/faucet" target="_blank"
+        style="margin-left:10px;font-size:0.82em;color:var(--accent-text);text-decoration:underline">
+        Get testnet OKB ↗</a>` : ""}`;
 
     // Update token dropdown to show balances
     const tokenSelect = document.getElementById("tokenSelect");
