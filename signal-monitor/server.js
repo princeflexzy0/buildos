@@ -290,6 +290,65 @@ const server = http.createServer(async (req, res) => {
     return res.end(JSON.stringify({ success: true, agent: state }));
   }
 
+  // POST /commit — register agent + deposit to escrow from backend + send claim email
+  if (req.method === "POST" && parts[0] === "commit") {
+    let body;
+    try { body = await readBody(req); } catch {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "Invalid JSON body" }));
+    }
+    const { config, recipient, amount, recipientEmail, ownerEmail } = body;
+    if (!config || !recipient || !amount) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "config, recipient, and amount required" }));
+    }
+    try {
+      // 1. Register agent
+      const state = registerAgent(config, null);
+      // 2. Deposit to escrow from backend wallet
+      const unlockAt = Math.floor(Date.now() / 1000) + 120; // 2 min — relayer releases immediately after
+      const { txHash, depositId } = await chain.depositToEscrow(recipient, amount, unlockAt);
+      state.escrowDepositId = depositId;
+      state.escrowTxHash = txHash;
+      state.escrowRecipient = recipient;
+      state.escrowAmount = amount;
+      saveToDisk();
+      // 3. Wait 2 min then auto-release (fire and forget)
+      setTimeout(async () => {
+        try {
+          await chain.releaseEscrow(depositId);
+          console.log(`[auto-release] deposit ${depositId} released`);
+        } catch(e) {
+          console.error(`[auto-release] failed:`, e.message);
+        }
+      }, 130000); // 2min 10sec
+      // 4. Send claim email to recipient
+      const claimUrl = \`\${process.env.SITE_URL || "https://buildos.tech"}/claim.html#\${depositId}\`;
+      if (recipientEmail) {
+        await notifier.sendTriggerFiredBeneficiaryEmail({
+          to: recipientEmail,
+          label: config.label || "BuildOS Agent",
+          statusUrl: claimUrl,
+          depositId,
+          claimUrl,
+        }).catch(e => console.warn("[email] failed:", e.message));
+      }
+      // 5. Notify owner
+      if (ownerEmail) {
+        await notifier.sendTriggerFiredOwnerEmail({
+          to: ownerEmail,
+          label: config.label || "BuildOS Agent",
+          statusUrl: \`\${process.env.SITE_URL || "https://buildos.tech"}/console.html\`,
+        }).catch(e => console.warn("[email] owner notify failed:", e.message));
+      }
+      res.writeHead(200, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ success: true, txHash, depositId, claimUrl }));
+    } catch(err) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
   // POST /commit-onchain/:hash - creates the real AgentFactory.createAgent() tx
   if (req.method === "POST" && parts[0] === "commit-onchain" && parts[1]) {
     try {

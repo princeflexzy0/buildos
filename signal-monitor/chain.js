@@ -120,6 +120,27 @@ async function relayTransfer(recipientAddress, amountWei) {
   return { txHash: receipt.hash };
 }
 
+
+// Deposit to escrow from backend deployer wallet
+async function depositToEscrow(recipientAddress, amountEth, unlockAt) {
+  const deployment = loadDeployment();
+  const { wallet } = getProviderAndWallet();
+  const escrowInfo = deployment.contracts.EscrowVault;
+  if (!escrowInfo) throw new Error("EscrowVault not in deployment");
+  const escrow = new ethers.Contract(escrowInfo.address, escrowInfo.abi, wallet);
+  console.log(`[escrow] depositing ${amountEth} OKB for ${recipientAddress}`);
+  const tx = await escrow.depositNative(recipientAddress, unlockAt, {
+    value: ethers.parseEther(amountEth.toString()),
+  });
+  const receipt = await tx.wait();
+  const event = receipt.logs
+    .map(log => { try { return escrow.interface.parseLog(log); } catch { return null; } })
+    .find(e => e && e.name === "Deposited");
+  const depositId = event?.args?.id?.toString();
+  console.log(`[escrow] deposited — id: ${depositId}, tx: ${receipt.hash}`);
+  return { txHash: receipt.hash, depositId };
+}
+
 module.exports = {
   loadDeployment,
   getFactoryContract,
@@ -129,6 +150,7 @@ module.exports = {
   getAgentBalance,
   releaseEscrow,
   relayTransfer,
+  depositToEscrow,
   getEscrowDeposit,
 };
 
