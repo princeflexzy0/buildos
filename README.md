@@ -45,6 +45,15 @@ Both methods are supported simultaneously. The old name-only check-in
 (`/guardian-checkin/:hash`) is still present for backwards compatibility but
 should be considered a soft fallback only.
 
+**Claim flow is code-gated, not just link-gated.** When an agent's escrow
+is funded (`POST /commit`), a random 6-character claim code is generated and
+emailed to the beneficiary alongside the claim link. `POST /claim/:depositId`
+requires that exact code and rejects missing, empty, or incorrect codes with
+`403 Invalid claim code` rather than releasing funds. As a fallback, a
+background timer auto-releases the escrow ~2 minutes after funding if nobody
+claims it manually first - the auto-release checks `claimClaimed` before
+firing so a manual claim and the timer can't both release the same deposit.
+
 **M-of-N guardian consensus.** `guardianThreshold` on each agent config sets
 how many guardians must confirm before the countdown resets. The status page
 shows live progress ("2 of 3 confirmed"). Pending confirmations are stored
@@ -124,6 +133,9 @@ No build step on the frontend — vanilla JS/HTML/CSS served statically.
 | GET    | `/status?owner=0x...`         | List agents by owner wallet                                  |
 | GET    | `/guardian/verify?token=`     | Magic-link check-in (guardian clicks emailed link)           |
 | POST   | `/register`                   | Create or update an agent config                             |
+| POST   | `/commit`                     | Register agent + deposit to escrow + email claim code        |
+| GET    | `/claim-info/:depositId`      | Claim metadata (label, amount, letter) without releasing     |
+| POST   | `/claim/:depositId`           | Release escrow to beneficiary - requires matching claim code |
 | POST   | `/letter/:hash`               | Set/update the beneficiary letter                            |
 | POST   | `/checkin/:hash`              | Owner check-in — resets countdown                            |
 | POST   | `/guardian-checkin/:hash`     | Guardian check-in by name (soft, legacy)                     |
@@ -189,5 +201,11 @@ Frontend + signal-monitor both deploy to Railway. Custom domain
 - **Magic-link guardian auth** — Resend emails unique single-use tokens to guardians; token required to check in, name alone is not enough
 - **Wallet-signature guardian auth** — guardians with ETH wallets sign a deterministic message; verified server-side via ethers.js
 - `.env.example` added with all required vars documented
+
+### Claim-Code Hardening + Wallet Reconnect Fix (session 4)
+- **Claim endpoint hardened** - `POST /claim/:depositId` now rejects missing, empty, or incorrect claim codes with `403 Invalid claim code` instead of releasing funds
+- **Wallet disconnect now attempts to revoke provider permissions** - `disconnectWallet()` calls `wallet_revokePermissions` on the active provider; confirmed working on MetaMask. OKX Wallet's extension currently rejects this call (403), so switching OKX accounts requires the user to manually remove buildos.tech from OKX Wallet's own Connected Sites settings before reconnecting
+- **Wallet connect now attempts to force the account picker** - `connectWith()` calls `wallet_requestPermissions` before `eth_requestAccounts`; same OKX limitation applies
 EOF
 echo "done"
+

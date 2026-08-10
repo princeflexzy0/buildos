@@ -106,6 +106,7 @@
     <ul class="how-tips">
       <li>🟢 <strong>Demo Mode ON:</strong> try everything freely, no wallet needed</li>
       <li>🦊 <strong>Demo Mode OFF:</strong> connect MetaMask or OKX Wallet</li>
+      <li>🔄 Disconnecting revokes the connection on MetaMask, showing a fresh picker next time. OKX currently requires removing BuildOS from its own Connected Sites settings to fully switch accounts</li>
       <li>📋 Agents saved and linked to your wallet reconnecting restores history</li>
     </ul>
   </div>
@@ -150,6 +151,14 @@
     <div class="faq-item">
       <h4>What tokens are supported?</h4>
       <p>OKB, USDT, and USDC on X Layer testnet. Mainnet support is on the roadmap.</p>
+    </div>
+    <div class="faq-item">
+      <h4>How does the beneficiary actually receive funds?</h4>
+      <p>When the trigger fires, the beneficiary gets an email with a claim link and a one-time claim code. Entering the correct code releases the funds, no wallet required. If nobody claims within a couple minutes, the funds release automatically as a fallback.</p>
+    </div>
+    <div class="faq-item">
+      <h4>My wallet keeps reconnecting to the same account. How do I switch?</h4>
+      <p>Click Disconnect, then reconnect. On MetaMask this always shows a fresh account picker. On OKX Wallet, some versions keep the site authorized even after disconnecting in BuildOS - if this happens, open the OKX extension, go to its Connected Sites settings, and manually remove buildos.tech, then reconnect.</p>
     </div>
   </div>
 </section>
