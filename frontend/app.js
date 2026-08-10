@@ -494,7 +494,7 @@ commitBtn?.addEventListener("click", async () => {
       // Use ethers ABI — fixes InvalidUnlockTime + wrong recipient bug
       const browserProvider = new ethers.BrowserProvider(window.activeProvider);
       const signer = await browserProvider.getSigner();
-      const safeUnlockAt = Math.floor(Date.now() / 1000) + Math.max(triggerSeconds, 120);
+      const safeUnlockAt = Math.floor(Date.now() / 1000) + Math.min(Math.max(triggerSeconds || 120, 120), 31536000);
       const { txHash, depositId: escrowDepositId } = await depositNativeEscrow(
         signer,
         currentConfig.recipient,
@@ -538,7 +538,6 @@ function renderAgent(agent) {
         ${days ? `<span>⏱ ${days}-day trigger</span>` : ""}
         <span class="badge ${agent.consensusMet ? "active" : ""}">${agent.consensusMet ? "✓ consensus met" : "watching"}</span>
       </div>
-      <div class="agent-hash">${agent.configHash}</div>
       ${committed ? `<div class="agent-balance" id="balance-${agent.configHash}">balance: loading…</div>` : ""}
       <div class="agent-last-checkin" id="checkin-${agent.configHash}">last check-in: ${agent.lastCheckin ? new Date(agent.lastCheckin * 1000).toLocaleTimeString() : "never"}</div>
       <div class="agent-escrow-countdown" id="escrow-countdown-${agent.configHash}" style="display:none"></div>
