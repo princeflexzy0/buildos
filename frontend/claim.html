@@ -207,7 +207,7 @@ async function claimFunds() {
 function showStatus(type, msg) {
   const el = document.getElementById("claimStatus");
   el.className = "claim-status " + type;
-  el.textContent = msg;
+  el.innerHTML = msg;
 }
 // Auto-load deposit info when page loads
 window.addEventListener("DOMContentLoaded", autoLoadDeposit);

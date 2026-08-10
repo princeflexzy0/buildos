@@ -442,6 +442,28 @@ commitBtn?.addEventListener("click", async () => {
       const res = await fetch(`${MONITOR_URL}/commit-onchain/${currentConfig.configHash}`, { method: "POST" });
       const data = await res.json();
       if (!data.success) throw new Error(data.error || "commit failed");
+      // Show success with deposit + claim info
+      const depositId = data.agent?.escrowDepositId ?? data.escrowDepositId ?? null;
+      const claimUrl = depositId != null
+        ? `${window.location.origin}/claim.html?depositId=${depositId}`
+        : null;
+      const msg = claimUrl
+        ? `✅ Agent committed onchain!
+
+Share this claim link with your beneficiary:
+${claimUrl}`
+        : `✅ Agent committed onchain!
+
+Tx: ${data.txHash || "confirmed"}`;
+      alert(msg);
+      if (claimUrl) {
+        const shareRow = document.getElementById("shareStatusRow");
+        const shareVal = document.getElementById("shareStatusValue");
+        if (shareRow && shareVal) {
+          shareRow.style.display = "flex";
+          shareVal.innerHTML = `<a href="${claimUrl}" target="_blank">${claimUrl}</a>`;
+        }
+      }
     } else {
       if (!window.activeProvider) throw new Error("No wallet provider active");
       const valueHex = currentConfig.amount

@@ -66,20 +66,27 @@ async function sendTriggerFiredOwnerEmail({ to, label, statusUrl }) {
   });
 }
 
-async function sendTriggerFiredBeneficiaryEmail({ to, label, statusUrl, depositId, claimUrl }) {
+async function sendTriggerFiredBeneficiaryEmail({ to, label, statusUrl, depositId, claimUrl, letter }) {
   if (!resend || !to) return { skipped: true };
+  const letterBlock = letter
+    ? `<div style="margin:20px 0;padding:16px 20px;background:#faf9f5;border-left:3px solid #2d6a4f;border-radius:4px;color:#333;line-height:1.7;font-style:italic">${letter.replace(/\n/g, "<br>")}</div>`
+    : "";
   const html = wrapEmail({
-    heading: `A note is waiting for you`,
+    heading: `Someone left you a message`,
     body: `
-      <p style="color:#444;line-height:1.6">Someone set up a BuildOS agent that names you as a beneficiary, and its trigger condition has now been met.</p>
-      <a href="${statusUrl}" style="display:inline-block;margin-top:16px;padding:12px 24px;background:#2d6a4f;color:#fff;text-decoration:none;border-radius:8px;font-weight:500">View Message & Status</a>
-      ${claimUrl ? `<br><a href="${claimUrl}" style="display:inline-block;margin-top:12px;padding:12px 24px;background:#1a1a17;color:#fff;text-decoration:none;border-radius:8px;font-weight:500">💰 Claim Your Funds</a>` : ""}
+      <p style="color:#444;line-height:1.6">An agent named <strong>${label || "Untitled"}</strong> was set up for you. Its trigger condition has been met — the message and funds below are now yours.</p>
+      ${letterBlock}
+      ${claimUrl
+        ? `<a href="${claimUrl}" style="display:inline-block;margin-top:20px;padding:14px 28px;background:#1a1a17;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;font-size:1em">💰 Claim Your Funds →</a>`
+        : ""}
+      <br>
+      <a href="${statusUrl}" style="display:inline-block;margin-top:12px;padding:10px 20px;background:#f0f0ec;color:#1a1a17;text-decoration:none;border-radius:8px;font-size:0.9em">View Full Status</a>
     `,
   });
   return resend.emails.send({
     from: FROM_EMAIL,
     to,
-    subject: `A message is waiting for you`,
+    subject: `📬 ${label || "A BuildOS agent"} — a message is waiting for you`,
     html,
   });
 }

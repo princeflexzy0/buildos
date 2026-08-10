@@ -236,6 +236,7 @@ function autoEvaluate(state) {
         statusUrl,
         depositId: state.escrowDepositId,
         claimUrl,
+        letter: state.beneficiaryLetter || null,
       }).catch((e) => console.warn("[notifier] trigger beneficiary email failed:", e.message));
     }
   }
