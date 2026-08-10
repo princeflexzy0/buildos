@@ -270,7 +270,31 @@ function evaluateConsensus(state) {
 function tickAll() {
   if (!registry || typeof registry.forEach !== "function") return;
   registry.forEach((state) => {
-    if (!state.executedAt) autoEvaluate(state);
+    // Always evaluate agents that haven't fired yet
+    if (!state.executedAt) {
+      autoEvaluate(state);
+      return;
+    }
+    // For already-executed agents: release escrow if not yet released
+    if (
+      state.escrowDepositId != null &&
+      !state.escrowReleased &&
+      !state.escrowReleasePending
+    ) {
+      state.escrowReleasePending = true;
+      chain.releaseEscrow(state.escrowDepositId)
+        .then(r => {
+          state.escrowReleased = true;
+          state.escrowReleaseTxHash = r.txHash;
+          state.escrowReleasePending = false;
+          saveToDisk();
+          console.log(`[escrow] tick-released deposit #${state.escrowDepositId} — tx: ${r.txHash}`);
+        })
+        .catch(e => {
+          state.escrowReleasePending = false;
+          console.warn(`[escrow] tick-release failed for #${state.escrowDepositId}:`, e.message);
+        });
+    }
   });
   saveToDisk();
 }
