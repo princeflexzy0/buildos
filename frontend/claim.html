@@ -70,14 +70,29 @@ let deposit = null;
 let connectedAddr = null;
 
 async function connectAndLoad() {
-  // Connect wallet then withdraw
-  const pick = confirm("Which wallet?\n\nOK = OKX Wallet\nCancel = MetaMask");
-  const walletType = pick ? "okx" : "metamask";
-  const provider = walletType === "okx" ? window.okxwallet : window.ethereum;
-  if (!provider) { alert("Wallet not found. Install OKX Wallet or MetaMask."); return; }
-  const accounts = await provider.request({ method: "eth_requestAccounts" });
-  connectedAddr = accounts[0];
-  await doWithdraw();
+  const btn = document.getElementById("connectBtn");
+  btn.disabled = true;
+  btn.textContent = "Claiming...";
+  try {
+    const MONITOR = window.BUILDOS_CONFIG?.MONITOR_URL || "https://signal-monitor-production.up.railway.app";
+    const res = await fetch(`${MONITOR}/claim/${depositId}`, { method: "POST" });
+    const data = await res.json();
+    if (data.already) {
+      showStatus("claimed", "Already claimed — funds were sent to the recipient wallet.");
+      btn.textContent = "Already Claimed";
+      return;
+    }
+    if (!data.success) throw new Error(data.error || "Claim failed");
+    const explorer = window.BUILDOS_CONFIG?.EXPLORER_TX_BASE || "https://www.okx.com/web3/explorer/xlayer-test/tx";
+    const amountOKB = (Number(data.amount) / 1e18).toFixed(6);
+    showStatus("success", `✅ Claimed! ${amountOKB} OKB sent to ${data.recipient} — <a href="${explorer}/${data.txHash}" target="_blank">view tx ↗</a>`);
+    btn.textContent = "Claimed ✓";
+    document.getElementById("claimBtn") && (document.getElementById("claimBtn").disabled = true);
+  } catch(err) {
+    showStatus("error", "Claim failed: " + err.message);
+    btn.disabled = false;
+    btn.textContent = "Try Again";
+  }
 }
 
 async function autoLoadDeposit() {
