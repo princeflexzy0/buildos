@@ -250,7 +250,6 @@ compileBtn?.addEventListener("click", async () => {
     compilerOutput.textContent = "// connect a wallet or enable Demo Mode first";
     compileBtn.disabled = false;
     compileBtn.textContent = "Compile";
-    return;
     openWalletModal();
     return;
   }
@@ -297,6 +296,10 @@ compileBtn?.addEventListener("click", async () => {
 
 // ─── Register ─────────────────────────────────────────────────────────────────
 registerBtn?.addEventListener("click", async () => {
+  if (!isValidAddress(currentConfig?.recipient)) {
+    alert("Please paste a valid 0x… recipient address in the Recipient field before registering.");
+    return;
+  }
   if (!isDemoMode && !connectedAddress) {
     alert("Connect a wallet or enable Demo Mode first.");
     openWalletModal();
@@ -383,6 +386,19 @@ commitBtn?.addEventListener("click", async () => {
       const valueHex = currentConfig.amount
         ? "0x" + Math.floor(Number(currentConfig.amount) * 1e18).toString(16)
         : "0x0";
+      // Check balance before sending — block if insufficient
+      const balanceHex = await window.activeProvider.request({
+        method: "eth_getBalance",
+        params: [connectedAddress, "latest"],
+      });
+      const balanceWei = BigInt(balanceHex);
+      const sendWei = BigInt(valueHex);
+      const gasBuffer = BigInt("500000000000000"); // ~0.0005 OKB for gas
+      if (balanceWei < sendWei + gasBuffer) {
+        const balanceOKB = (Number(balanceWei) / 1e18).toFixed(6);
+        const needOKB = (Number(sendWei + gasBuffer) / 1e18).toFixed(6);
+        throw new Error(`Insufficient balance. You have ${balanceOKB} OKB, need at least ${needOKB} OKB (amount + gas).`);
+      }
       const txHash = await window.activeProvider.request({
         method: "eth_sendTransaction",
         params: [{ from: connectedAddress, to: currentConfig.recipient, value: valueHex }],
