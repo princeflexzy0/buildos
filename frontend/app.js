@@ -966,3 +966,23 @@ function handleCopyStatusLink() {
     prompt("Copy this link:", link);
   });
 }
+
+// ─── Template auto-fill from ?template= param ────────────────────────────────
+const TEMPLATE_PROMPTS = {
+  chronicle: "Release my savings to my daughter at 0xABC... if I don't check in for 6 months. Send her a letter explaining how to claim the funds.",
+  sentinel: "Release payment of 2 OKB to my supplier at 0xDEF... when shipment tracking confirms delivery. Cancel and refund if no confirmation within 30 days.",
+  guardian: "Pay out 1 OKB to policyholder at 0xGHI... automatically if flight delay exceeds 3 hours. Use flight data oracle for confirmation.",
+  warden: "Reveal my sealed document to 0xJKL... if I miss 3 consecutive weekly check-ins. Keep it locked as long as I check in on schedule.",
+  escrow: "Hold 5 OKB in escrow between buyer 0xMNO... and seller 0xPQR... Release to seller only when both parties confirm the deal is complete.",
+  subscription: "Send 0.1 OKB to 0xSTU... every 30 days. Cancel automatically if I send a stop signal or miss funding the wallet.",
+};
+
+(function applyTemplateFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const tpl = params.get("template");
+  if (!tpl || !TEMPLATE_PROMPTS[tpl]) return;
+  const input = document.getElementById("compilerInput");
+  if (!input) return;
+  input.value = TEMPLATE_PROMPTS[tpl];
+  input.focus();
+})();
