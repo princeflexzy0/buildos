@@ -977,7 +977,7 @@ const TEMPLATE_PROMPTS = {
   subscription: "Send 0.1 OKB to 0xSTU... every 30 days. Cancel automatically if I send a stop signal or miss funding the wallet.",
 };
 
-(function applyTemplateFromURL() {
+window.addEventListener("DOMContentLoaded", function applyTemplateFromURL() {
   const params = new URLSearchParams(window.location.search);
   const tpl = params.get("template");
   if (!tpl || !TEMPLATE_PROMPTS[tpl]) return;
@@ -985,4 +985,4 @@ const TEMPLATE_PROMPTS = {
   if (!input) return;
   input.value = TEMPLATE_PROMPTS[tpl];
   input.focus();
-})();
+});
