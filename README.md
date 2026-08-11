@@ -207,3 +207,15 @@ Frontend + signal-monitor both deploy to Railway. Custom domain
 - **Wallet disconnect now attempts to revoke provider permissions** - `disconnectWallet()` calls `wallet_revokePermissions` on the active provider; confirmed working on MetaMask. OKX Wallet's extension currently rejects this call (403), so switching OKX accounts requires the user to manually remove buildos.tech from OKX Wallet's own Connected Sites settings before reconnecting
 - **Wallet connect now attempts to force the account picker** - `connectWith()` calls `wallet_requestPermissions` before `eth_requestAccounts`; same OKX limitation applies
 
+
+## Mainnet Deployment (X Layer)
+
+AgentFactory is live on X Layer mainnet (chain ID 196):
+
+| Contract | Address |
+|----------|---------|
+| AgentFactory | `0xC428932865B2297055B4428632F2acd541844D09` |
+
+Explorer: https://www.okx.com/web3/explorer/xlayer/address/0xC428932865B2297055B4428632F2acd541844D09
+
+Deployment info saved at `deployments/xlayer_mainnet.json`.
