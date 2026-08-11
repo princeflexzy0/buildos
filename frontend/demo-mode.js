@@ -15,7 +15,7 @@ function initDemoModeOnLoad() {
   const toggle = document.getElementById("demoToggle");
   if (toggle) toggle.checked = shouldEnable;
   if (shouldEnable) enterDemoMode(false);
-  if (typeof applyTemplateFromURL === 'function') applyTemplateFromURL();
+  setTimeout(function() { if (typeof applyTemplateFromURL === 'function') applyTemplateFromURL(); }, 300);
 }
 
 function enterDemoMode(persist = true) {
