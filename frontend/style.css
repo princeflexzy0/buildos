@@ -506,3 +506,45 @@ p, .page-sub, .sub, .faq-item p, .pipeline-step-lg p, .how-tips li {
 /* Check-in feedback on agent cards */
 .agent-last-checkin { font-size: 11px; color: var(--text-dim); margin: 2px 0 8px; transition: color 0.2s; }
 .agent-last-checkin.checkin-flash { color: var(--accent, #00D28A); font-weight: 600; }
+
+/* ── Templates Strip ── */
+.templates-strip {
+  max-width: 900px;
+  margin: 0 auto 2rem;
+  padding: 0 1.5rem;
+}
+.templates-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted, #888);
+  margin-bottom: 0.75rem;
+}
+.templates-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.tpl-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border, #2a2a2a);
+  border-radius: 10px;
+  background: var(--surface, #111);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  text-align: left;
+  min-width: 140px;
+  flex: 1;
+}
+.tpl-card:hover {
+  border-color: var(--green, #22c55e);
+  background: var(--surface-hover, #1a1a1a);
+}
+.tpl-icon { font-size: 1.25rem; }
+.tpl-name { font-size: 0.85rem; font-weight: 600; color: var(--text, #fff); }
+.tpl-desc { font-size: 0.72rem; color: var(--text-muted, #888); line-height: 1.3; }
