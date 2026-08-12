@@ -443,6 +443,29 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+
+  // POST /api/demo-fire — sends a live testnet tx for the live demo page
+  if (req.method === "POST" && pathname === "/api/demo-fire") {
+    try {
+      const { ethers } = require("ethers");
+      const provider = new ethers.JsonRpcProvider(process.env.XLAYER_TESTNET_RPC);
+      const wallet = new ethers.Wallet(process.env.DEPLOYER_PRIVATE_KEY, provider);
+      const feeData = await provider.getFeeData();
+      const tx = await wallet.sendTransaction({
+        to: wallet.address,
+        value: 0n,
+        gasLimit: 21000n,
+        gasPrice: feeData.gasPrice,
+      });
+      await tx.wait();
+      res.writeHead(200, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ success: true, txHash: tx.hash }));
+    } catch (e) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: e.message }));
+    }
+  }
+
   res.writeHead(404, { "Content-Type": "application/json" });
   res.end(JSON.stringify({ error: "Not found" }));
 });
