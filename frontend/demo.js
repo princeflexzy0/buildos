@@ -116,7 +116,7 @@ async function fireDemoTx() {
   status.style.color = "var(--accent-text)";
 
   try {
-    const res = await fetch("/api/demo-fire", {
+    const res = await fetch(`${window.BUILDOS_CONFIG.MONITOR_URL}/api/demo-fire`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sessionId: getDemoSessionId() }),
