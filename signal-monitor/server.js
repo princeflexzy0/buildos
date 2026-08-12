@@ -445,7 +445,7 @@ const server = http.createServer(async (req, res) => {
 
 
   // POST /api/demo-fire — sends a live testnet tx for the live demo page
-  if (req.method === "POST" && pathname === "/api/demo-fire") {
+  if (req.method === "POST" && req.url === "/api/demo-fire") {
     try {
       const { ethers } = require("ethers");
       const provider = new ethers.JsonRpcProvider(process.env.XLAYER_TESTNET_RPC);
